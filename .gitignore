@@ -2,9 +2,13 @@
 data/raw/*.csv
 data/processed/*.csv
 data/processed/*.png
+# Exception : artefact necessaire au runtime du dashboard
+!data/processed/features_bris_de_glace.csv
 
 # Models (binary, too large)
 models/*.joblib
+# Exception : modele entraine necessaire au runtime du dashboard
+!models/xgboost_insatisfaction.joblib
 
 # Secrets (NEVER commit)
 app/.streamlit/secrets.toml
