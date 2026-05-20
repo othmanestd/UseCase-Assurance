@@ -1,14 +1,9 @@
 """
 Connecteur de données pour le dashboard Streamlit.
 
-Deux modes de fonctionnement :
-1. Mode CSV local (par défaut) — Lit les fichiers CSV dans data/raw/
-2. Mode CSV actualisé — Surveille un dossier d'export Celonis pour les fichiers les plus récents
-
-Pour actualiser les données :
-    - Exporter les tables depuis Celonis (Data Pool > Tables > Export CSV)
-    - Placer les CSV dans data/raw/ (ou dans le dossier configuré)
-    - Le dashboard détecte automatiquement les nouveaux fichiers
+Modes de fonctionnement :
+1. CSV processed (par défaut Cloud) — Lit data/processed/features_bris_de_glace.csv
+2. CSV raw + rebuild — Si raw plus récent ou processed absent, recalcule les features
 """
 
 import os
@@ -16,7 +11,35 @@ import pandas as pd
 import streamlit as st
 from pathlib import Path
 from datetime import datetime
+
 from src.utils import RAW_DATA_DIR, PROCESSED_DATA_DIR
+
+
+# Chemins potentiels du fichier de secrets Streamlit
+_SECRETS_PATHS = [
+    Path.home() / ".streamlit" / "secrets.toml",
+    Path(__file__).parent.parent / ".streamlit" / "secrets.toml",
+    Path(__file__).parent.parent / "app" / ".streamlit" / "secrets.toml",
+]
+
+
+def _has_secrets_file() -> bool:
+    """Vérifie si un fichier secrets.toml existe avant d'y accéder via st.secrets.
+
+    Sans cette garde, Streamlit affiche une bannière rouge 'No secrets found'
+    à chaque accès en l'absence du fichier.
+    """
+    return any(p.exists() for p in _SECRETS_PATHS)
+
+
+def _get_secret(key: str, default):
+    """Accès sûr à st.secrets — silencieux si le fichier n'existe pas."""
+    if not _has_secrets_file():
+        return default
+    try:
+        return st.secrets.get(key, default)
+    except Exception:
+        return default
 
 
 def get_data_config() -> dict:
@@ -25,14 +48,8 @@ def get_data_config() -> dict:
         "data_dir": str(RAW_DATA_DIR),
         "auto_refresh": True,
     }
+    config["data_dir"] = _get_secret("DATA_DIR", config["data_dir"])
 
-    # Override via Streamlit secrets si disponible
-    try:
-        config["data_dir"] = st.secrets.get("DATA_DIR", config["data_dir"])
-    except Exception:
-        pass
-
-    # Override via variable d'environnement
     env_dir = os.getenv("PFE_DATA_DIR")
     if env_dir:
         config["data_dir"] = env_dir
@@ -44,77 +61,99 @@ def get_data_freshness() -> dict:
     """Vérifie la fraîcheur des fichiers de données."""
     config = get_data_config()
     data_dir = Path(config["data_dir"])
+    processed_path = PROCESSED_DATA_DIR / "features_bris_de_glace.csv"
 
     files_info = {}
-    expected_files = [
+    expected_raw_files = [
         "anonymized_dataset_auto.csv",
         "anonymized_reclamation_auto.csv",
         "event_log_assurance_expert.csv",
         "event_log_reclamations_client.csv",
     ]
 
-    for f in expected_files:
+    for f in expected_raw_files:
         path = data_dir / f
         if path.exists():
             mod_time = datetime.fromtimestamp(path.stat().st_mtime)
-            size_mb = path.stat().st_size / (1024 * 1024)
             files_info[f] = {
                 "exists": True,
                 "last_modified": mod_time,
-                "size_mb": round(size_mb, 2),
+                "size_mb": round(path.stat().st_size / (1024 * 1024), 2),
                 "age_hours": round((datetime.now() - mod_time).total_seconds() / 3600, 1),
             }
         else:
             files_info[f] = {"exists": False}
 
-    all_exist = all(info["exists"] for info in files_info.values())
-    latest_update = max(
+    processed_info = None
+    if processed_path.exists():
+        mod_time = datetime.fromtimestamp(processed_path.stat().st_mtime)
+        processed_info = {
+            "exists": True,
+            "last_modified": mod_time,
+            "size_mb": round(processed_path.stat().st_size / (1024 * 1024), 2),
+            "age_hours": round((datetime.now() - mod_time).total_seconds() / 3600, 1),
+        }
+
+    raw_all_present = all(info["exists"] for info in files_info.values())
+    latest_raw = max(
         (info["last_modified"] for info in files_info.values() if info.get("exists")),
         default=None,
     )
 
     return {
         "files": files_info,
-        "all_present": all_exist,
-        "latest_update": latest_update,
+        "raw_all_present": raw_all_present,
+        "latest_raw_update": latest_raw,
+        "processed": processed_info,
         "data_dir": str(data_dir),
     }
 
 
-def show_data_status():
-    """Affiche le statut des données dans la sidebar Streamlit."""
+def show_data_status() -> None:
+    """Affiche un badge discret du statut des données dans la sidebar.
+
+    Logique :
+    - Si processed CSV présent : on s'appuie dessus, statut OK même sans raw.
+    - Si seulement raw : on affiche l'âge des raw.
+    - Si rien : erreur claire.
+    """
     freshness = get_data_freshness()
+    processed = freshness["processed"]
 
-    if freshness["all_present"]:
-        age = freshness["files"]["anonymized_dataset_auto.csv"].get("age_hours", 0)
-        if age < 24:
-            st.sidebar.success(f"Données à jour (il y a {age:.0f}h)")
-        elif age < 168:  # 7 jours
-            st.sidebar.warning(f"Données datent de {age/24:.0f} jours")
+    if processed and processed["exists"]:
+        age_h = processed["age_hours"]
+        if age_h < 24:
+            label = f"Données à jour ({age_h:.0f}h)"
+            st.sidebar.success(label, icon="✅")
+        elif age_h < 24 * 7:
+            label = f"Données : {age_h/24:.0f} jours"
+            st.sidebar.info(label, icon="ℹ️")
         else:
-            st.sidebar.error(f"Données anciennes ({age/24:.0f} jours)")
+            label = f"Données : {age_h/24:.0f} jours"
+            st.sidebar.warning(label, icon="⚠️")
+        return
 
-        st.sidebar.caption(f"Dernière MAJ : {freshness['latest_update'].strftime('%d/%m/%Y %H:%M')}")
-    else:
-        missing = [f for f, info in freshness["files"].items() if not info["exists"]]
-        st.sidebar.error(f"Fichiers manquants : {', '.join(missing)}")
+    if freshness["raw_all_present"]:
+        latest = freshness["latest_raw_update"]
+        st.sidebar.info(
+            f"Source brute · MAJ {latest.strftime('%d/%m/%Y')}",
+            icon="📂",
+        )
+        return
 
-    st.sidebar.caption(f"Source : {freshness['data_dir']}")
+    st.sidebar.error("Aucune donnée disponible", icon="🚫")
 
 
 def load_data_smart() -> tuple:
     """
-    Charge les données depuis les fichiers CSV.
-    Applique le pipeline de feature engineering complet.
-    Retourne (DataFrame features, source_label).
+    Charge les features depuis le CSV processed en priorité.
+    Rebuild depuis les CSV bruts uniquement si le processed est absent ou périmé.
+    Retourne (DataFrame, source_label).
     """
-    # Vérifier si le fichier features traité existe déjà
     features_path = PROCESSED_DATA_DIR / "features_bris_de_glace.csv"
-
     config = get_data_config()
     data_dir = Path(config["data_dir"])
 
-    # Vérifier si les CSV sources sont plus récents que le fichier features
     raw_files = [
         data_dir / "anonymized_dataset_auto.csv",
         data_dir / "anonymized_reclamation_auto.csv",
@@ -131,7 +170,6 @@ def load_data_smart() -> tuple:
                 break
 
     if need_rebuild:
-        # Reconstruire les features depuis les CSV sources
         from src.data_preparation import prepare_data
         from src.feature_engineering import build_feature_matrix
         from src.utils import save_processed
@@ -140,5 +178,5 @@ def load_data_smart() -> tuple:
         features = build_feature_matrix(bris, el_sin, el_rec, rec)
         save_processed(features, "features_bris_de_glace.csv")
         return features, "csv (recalculé)"
-    else:
-        return pd.read_csv(features_path), "csv"
+
+    return pd.read_csv(features_path), "csv"

@@ -1,16 +1,18 @@
-[data-testid="stMetric"] {
-    background-color: #f0f2f6;
-    border-radius: 10px;
-    padding: 15px;
-    text-align: center;
-}
+/* Styles minimaux complémentaires.
+   La majorité des styles est gérée dynamiquement dans app/theme.py
+   pour supporter le toggle clair/sombre. */
 
 .risk-high {
-    color: #e74c3c;
-    font-weight: bold;
+    color: #dc2626;
+    font-weight: 600;
+}
+
+.risk-medium {
+    color: #ea580c;
+    font-weight: 600;
 }
 
 .risk-low {
-    color: #2ecc71;
-    font-weight: bold;
+    color: #16a34a;
+    font-weight: 600;
 }
