@@ -1,0 +1,632 @@
+
+\documentclass[12pt,a4paper]{report}
+
+%% ===================== PACKAGES =====================
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+% \usepackage[french]{babel}  % Décommenter si texlive-lang-french est installé
+\usepackage{lmodern}
+\usepackage{geometry}
+\geometry{top=2.5cm, bottom=2.5cm, left=2.5cm, right=2.5cm}
+
+\usepackage{graphicx}
+\usepackage{float}
+\usepackage{multicol}
+\usepackage{eurosym}
+\usepackage{hyperref}
+\usepackage{url}
+\usepackage{xcolor}
+\usepackage{tikz}
+\usetikzlibrary{shapes.geometric, arrows.meta, positioning, calc, decorations.pathreplacing, backgrounds, fit, shadows, chains, mindmap, patterns}
+\usepackage{pgfplots}
+\pgfplotsset{compat=1.18}
+\usepackage{fancyhdr}
+\usepackage{titlesec}
+\usepackage{booktabs}
+\usepackage{longtable}
+\usepackage{array}
+\usepackage{caption}
+\usepackage{subcaption}
+\usepackage{enumitem}
+\usepackage{setspace}
+
+%% ===================== COULEURS =====================
+\definecolor{emsigreen}{RGB}{0,128,0}
+\definecolor{chaptercolor}{RGB}{0,0,0}
+\definecolor{linkcolor}{RGB}{0,0,180}
+
+\hypersetup{
+    colorlinks=true,
+    linkcolor=linkcolor,
+    citecolor=linkcolor,
+    urlcolor=linkcolor
+}
+
+%% ===================== STYLE DES CHAPITRES =====================
+\titleformat{\chapter}[display]
+  {\normalfont\huge\bfseries}
+  {\vspace{-1cm}\hfill
+   \begin{tikzpicture}
+     \draw[line width=2pt] (0,0) -- (12,0);
+     \draw[line width=2pt] (0,-0.5) -- (0,-1.5);
+     \node[anchor=east] at (0,-1) {\fontsize{14}{16}\selectfont Chapitre};
+     \node[anchor=west] at (0.5,-0.8) {\fontsize{60}{72}\selectfont\thechapter};
+     \draw[line width=2pt] (2.5,-0.5) -- (12,-0.5);
+   \end{tikzpicture}
+  }
+  {-0.5cm}
+  {\Huge}
+
+%% ===================== EN-TÊTE / PIED DE PAGE =====================
+
+
+%% ===================== ESPACEMENT =====================
+\setstretch{1.15}
+\setlength{\parindent}{1cm}
+\setlength{\parskip}{6pt}
+
+
+%% ============================================================
+%%                     DÉBUT DU DOCUMENT
+%% ============================================================
+\begin{document}
+%% ===================== PAGE DE GARDE =====================
+\begin{titlepage}
+\begin{center}
+
+\vspace*{0.1cm}
+
+% Logo école
+\includegraphics[width=0.60\textwidth]{logo_emsi.PNG}
+
+\vspace{0.3cm}
+
+{\large \textbf{ECOLE MAROCAINE DES SCIENCES DE L'INGENIEUR}}\\[0.1cm]
+{\small Membre de \textbf{HONORIS UNITED UNIVERSITIES}}
+
+\vspace{0.6cm}
+
+{\large \underline{\textbf{RAPPORT DE STAGE DE FIN D'ETUDES}}}\\[0.2cm]
+{\small \textit{5ème Année - Ingénierie Informatique et Réseaux\\
+MIAGE - Méthodes Informatiques Appliquées à la Gestion des Entreprises}}
+\vspace{0.3cm}
+
+\rule{0.85\textwidth}{0.8pt}\\[0.3cm]
+
+{\Large \textbf{Analyse et optimisation des\\
+processus de gestion des sinistres\\
+à l’aide du Process Mining}}\\[0.3cm]
+
+\rule{0.6\textwidth}{0.8pt}
+
+\vspace{0.6cm}
+
+% ===================== INFOS =====================
+
+\vspace{0.3cm}
+
+
+\textbf{Réalisé par :}\\
+\hspace{0.5cm} SADIKI Othmane
+
+\vspace{0.5cm}
+
+\textbf{Encadrants :}\\
+\hspace{0.5cm} Encadrant Professionnel : Hasna IGHAZRAN\\
+\hspace{0.5cm} Encadrant Pédagogique : \textit{[Nom]}
+
+
+
+
+\vspace{0.2cm}
+
+\begin{flushleft}
+
+\textbf{Membres du jury :}\\
+\hspace{0.5cm} Président : \textit{[Nom]}\\
+\hspace{0.5cm} Examinateur : \textit{[Nom]}\\
+\hspace{0.5cm} Encadrant pédagogique : \textit{[Nom]}
+
+\end{flushleft}
+
+\vspace{0.6cm}
+
+% Organisme + logo aligné
+\textbf{Organisme d'accueil :}
+
+\vspace{0.3cm}
+
+\begin{tabular}{c c}
+\includegraphics[width=0.40\textwidth]{logo_entreprise.png} &
+
+\end{tabular}
+
+\vspace{0.3cm}
+
+{\small \textbf{Année universitaire : 2025/2026}}
+
+\end{center}
+\end{titlepage}
+\textbf{}
+%% ===================== NUMÉROTATION ROMAINE =====================
+\pagenumbering{roman}
+ 
+%% ===================== REMERCIEMENTS =====================
+\chapter*{Remerciements}
+\addcontentsline{toc}{chapter}{Remerciements}
+ 
+Avant tout, nous adressons nos plus vifs remerciements à \textbf{Dieu le Tout-Puissant}, qui nous a accordé la force, la patience et la persévérance nécessaires pour mener à bien ce projet. Sa bienveillance nous a accompagnés à chaque étape de notre projet.
+ 
+Nous tenons ensuite à exprimer notre sincère reconnaissance à l'organisme d'accueil \textbf{Silamir Group}, qui nous a accueillis avec professionnalisme et confiance. Grâce à cette expérience, nous avons pu évoluer dans un cadre enrichissant et développer des compétences essentielles dans notre domaine.
+ 
+Nous adressons également nos remerciements à \textbf{Madame Hasna Ighazran}, notre encadrante professionnelle au sein de Silamir Group, pour sa disponibilité, ses orientations précieuses et son accompagnement tout au long de ce projet.
+ 
+Nous remercions tout particulièrement \textbf{[Nom de l'encadrant pédagogique]}, notre encadrant académique, pour sa disponibilité constante, ses conseils précieux et son encadrement de qualité tout au long de ce projet.
+ 
+Enfin, nous remercions vivement l'ensemble du corps professoral et administratif de l'\textbf{École Marocaine des Sciences de l'Ingénieur (EMSI)} pour la qualité de la formation reçue, ainsi que pour les valeurs professionnelles et humaines transmises tout au long de notre parcours académique.
+ 
+ 
+%% ===================== RÉSUMÉ =====================
+\chapter*{Résumé}
+\addcontentsline{toc}{chapter}{Résumé}
+ 
+Le présent rapport synthétise le travail réalisé dans le cadre de notre projet de fin d'études au sein de Silamir Group.
+ 
+L'objectif principal était de développer une solution d'optimisation des processus métier dans le secteur des télécommunications en s'appuyant sur le \textbf{Process Mining}. Ce projet se concentre spécifiquement sur le processus \textit{Order-to-Activate} (O2A) chez \textbf{Bouygues Telecom}, un processus critique qui couvre l'ensemble du parcours depuis la commande client jusqu'à l'activation effective du service.
+ 
+Pour atteindre cet objectif, nous avons d'abord collecté et préparé les données issues des journaux d'événements (\textit{event logs}) du système d'information. Ces données ont ensuite été analysées à l'aide d'algorithmes de Process Mining tels que l'\textit{Alpha Miner}, le \textit{Heuristic Miner} et l'\textit{Inductive Miner}, permettant de découvrir les processus réels, d'identifier les goulots d'étranglement et de mesurer la conformité par rapport aux processus cibles.
+ 
+Un tableau de bord interactif a été développé afin de permettre une visualisation claire des indicateurs clés de performance (KPI), notamment le temps de cycle, le taux de conformité et le taux de reprise. L'ensemble de la méthodologie suit le cadre \textbf{CRISP-DM}, garantissant une approche structurée et reproductible.
+ 
+\vspace{1cm}
+\noindent\textbf{Mots-clés :} \textbf{Process Mining, Télécommunications, Order-to-Activate, Event Log, CRISP-DM, Conformance Checking, Optimisation des processus, KPI, PM4Py, Bouygues Telecom.}
+ 
+ 
+%% ===================== ABSTRACT =====================
+\chapter*{Abstract}
+\addcontentsline{toc}{chapter}{Abstract}
+ 
+This report summarizes the work carried out as part of our final year project at Silamir Group.
+ 
+The main objective was to develop a solution for optimizing business processes in the telecommunications sector using \textbf{Process Mining}. This project specifically focuses on the \textit{Order-to-Activate} (O2A) process at \textbf{Bouygues Telecom}, a critical process that covers the entire journey from customer order to effective service activation.
+ 
+To achieve this objective, we first collected and prepared data from the information system's event logs. This data was then analyzed using Process Mining algorithms such as the \textit{Alpha Miner}, \textit{Heuristic Miner}, and \textit{Inductive Miner}, enabling the discovery of actual processes, the identification of bottlenecks, and the measurement of conformance against target processes.
+ 
+An interactive dashboard was developed to provide clear visualization of key performance indicators (KPIs), including cycle time, conformance rate, and rework rate. The entire methodology follows the \textbf{CRISP-DM} framework, ensuring a structured and reproducible approach.
+ 
+\vspace{1cm}
+\noindent\textbf{Keywords:} \textbf{Process Mining, Telecommunications, Order-to-Activate, Event Log, CRISP-DM, Conformance Checking, Process Optimization, KPI, PM4Py, Bouygues Telecom.}
+ 
+ 
+%% ===================== LISTE DES ABRÉVIATIONS =====================
+\chapter*{Liste des abréviations}
+\addcontentsline{toc}{chapter}{Liste des abréviations}
+ 
+\begin{table}[H]
+\centering
+\begin{tabular}{|l|p{10cm}|}
+\hline
+\textbf{Abréviation} & \textbf{Titre complet} \\
+\hline
+API & Application Programming Interface \\
+BPMN & Business Process Model and Notation \\
+CRISP-DM & Cross-Industry Standard Process for Data Mining \\
+CSV & Comma-Separated Values \\
+DFG & Directly-Follows Graph \\
+ETL & Extract, Transform, Load \\
+IA & Intelligence Artificielle \\
+KPI & Key Performance Indicator \\
+NLP & Natural Language Processing \\
+O2A & Order-to-Activate \\
+PM & Process Mining \\
+PM4Py & Process Mining for Python \\
+RPA & Robotic Process Automation \\
+SI & Système d'Information \\
+SLA & Service Level Agreement \\
+XES & eXtensible Event Stream \\
+\hline
+\end{tabular}
+\end{table}
+ 
+ 
+%% ===================== TABLE DES FIGURES =====================
+\listoffigures
+\addcontentsline{toc}{chapter}{Table des figures}
+ 
+%% ===================== LISTE DES TABLEAUX =====================
+\listoftables
+\addcontentsline{toc}{chapter}{Liste des tableaux}
+ 
+%% ===================== TABLE DES MATIÈRES =====================
+\tableofcontents
+ 
+ 
+%% ===================== NUMÉROTATION ARABE =====================
+\newpage
+\pagenumbering{arabic}
+
+%% ============================================================
+%%             INTRODUCTION GÉNÉRALE
+%% ============================================================
+\chapter*{Introduction Générale}
+\addcontentsline{toc}{chapter}{Introduction}
+ 
+Aujourd'hui, dans un monde de plus en plus numérisé, l'optimisation des processus métier occupe une place centrale dans les stratégies de transformation digitale des entreprises. Face à la complexité croissante des systèmes d'information et à l'intensification de la concurrence, les organisations cherchent à comprendre, mesurer et améliorer en continu leurs processus opérationnels afin de gagner en efficacité, en qualité de service et en compétitivité.
+ 
+Dans ce contexte, le \textbf{Process Mining} émerge comme une discipline innovante à l'intersection de la \textit{Data Science} et du \textit{Business Process Management} (BPM). En exploitant les journaux d'événements (\textit{event logs}) générés par les systèmes d'information, le Process Mining permet de découvrir automatiquement les processus tels qu'ils sont réellement exécutés, d'identifier les écarts par rapport aux processus cibles, et de détecter les goulots d'étranglement et les inefficacités. Cette approche fondée sur les données offre une vision objective et factuelle des opérations, là où les méthodes traditionnelles d'analyse des processus reposent souvent sur des perceptions subjectives.
+ 
+Le secteur des \textbf{télécommunications} constitue un terrain d'application particulièrement pertinent pour le Process Mining. Les opérateurs télécoms gèrent des volumes considérables de transactions -- des commandes clients à l'activation des services, en passant par la facturation et le support technique -- impliquant des processus complexes, transversaux et fortement automatisés. L'optimisation de ces processus représente un levier stratégique majeur pour améliorer l'expérience client, réduire les coûts opérationnels et accélérer le \textit{time-to-market}.
+ 
+C'est dans ce cadre que s'inscrit notre projet de fin d'études, réalisé au sein de \textbf{Silamir Group}, un cabinet de conseil et d'ingénierie technologique spécialisé notamment dans le Process Mining (partenaire officiel de \textbf{Celonis}). Notre travail porte sur l'optimisation du processus \textbf{Order-to-Activate} (O2A) chez \textbf{Bouygues Telecom}, un processus critique qui couvre le parcours complet depuis la prise de commande jusqu'à l'activation effective du service pour le client final.
+ 
+L'objectif principal de ce projet est de mettre en \oe uvre une démarche complète de Process Mining -- suivant la méthodologie \textbf{CRISP-DM} -- afin de :
+\begin{itemize}[noitemsep]
+    \item Découvrir et modéliser le processus O2A tel qu'il est réellement exécuté ;
+    \item Mesurer la conformité du processus par rapport aux modèles cibles ;
+    \item Identifier les goulots d'étranglement, les temps d'attente excessifs et les boucles de reprise ;
+    \item Proposer des pistes d'amélioration concrètes et mesurables.
+\end{itemize}
+ 
+Le rapport actuel est organisé de la manière suivante :
+ 
+\begin{itemize}
+    \item \textbf{Chapitre 1 :} \textit{Contexte général du projet} : Ce chapitre expose les informations relatives à l'organisme d'accueil, le contexte du projet, ainsi que ses objectifs principaux et la problématique à résoudre.
+ 
+    \item \textbf{Chapitre 2 :} \textit{Revue de littérature} : Ce chapitre sert à définir les concepts clés du Process Mining et à situer notre projet dans son contexte scientifique et technique.
+ 
+    \item \textbf{Chapitre 3 :} \textit{Données} : Ce chapitre décrit la stratégie mise en place pour collecter, préparer et explorer les données issues des journaux d'événements.
+ 
+    \item \textbf{Chapitre 4 :} \textit{Modélisation et Mise en \oe uvre} : Ce chapitre regroupe l'ensemble des réalisations du projet, de la découverte de processus au \textit{Conformance Checking} et à l'analyse de performance.
+ 
+    \item \textbf{Chapitre 5 :} \textit{Déploiement} : Ce chapitre détaille la mise en place du tableau de bord interactif et le déploiement de la solution.
+\end{itemize}
+%% ============================================================
+%%             CHAPITRE 1 : CONTEXTE GÉNÉRAL DU PROJET
+%% ============================================================
+\chapter{Contexte général du projet}
+
+Ce chapitre présente le contexte général dans lequel s’inscrit notre projet de fin d’études ainsi que l’environnement professionnel du stage. Il permet de situer le cadre global du travail réalisé et de mieux comprendre les enjeux associés. Dans un premier temps, nous présenterons l’organisme d’accueil, en mettant en avant ses activités principales ainsi que ses domaines d’expertise. Ensuite, nous introduirons le projet en détaillant sa problématique et les objectifs visés. Enfin, nous aborderons le planning de réalisation ainsi que la méthodologie adoptée, afin de structurer les différentes étapes du projet.
+\clearpage
+
+%% ============================================================
+%% SECTION 1.1 : PRÉSENTATION DE SILAMIR GROUP
+%% (Rédigée à partir des données officielles de www.silamir.com)
+%% ============================================================
+\section{Présentation de l'organisme d'accueil}
+
+%% -----------------------------------------------------------
+%% 1.1.1 Présentation générale
+%% -----------------------------------------------------------
+\subsection{Présentation générale}
+
+\textbf{Silamir Group} est un cabinet de conseil et d'ingénierie technologique français, fondé en \textbf{2011} par \textbf{Muriel Figer} et \textbf{Juliette Soria}. Né de la conviction que l'immédiateté et l'incertitude étant devenues la norme, il est essentiel de mener les transformations vers des organisations à même d'évoluer en permanence, le groupe s'est imposé en quelques années comme un acteur innovant de référence dans l'écosystème du conseil en transformation digitale.
+
+Positionné à l'intersection du \textbf{conseil métier} et des \textbf{technologies de pointe}, Silamir accompagne les grandes entreprises (dont les deux tiers du CAC~40) et les ETI dans leur transformation en hybridant des expertises plurisectorielles avec des compétences technologiques avancées en intelligence artificielle, data, cloud et cybersécurité. Sa signature, \textit{``Crafting sustainable transformation with people and technologies''}, traduit cette ambition d'innover pour ses clients en combinant de bout en bout les expertises conseil et technologiques.
+
+Ce qui distingue Silamir sur le marché, c'est avant tout sa \textbf{culture du concret} : des cycles de décision rapides, un \textit{time-to-value} court, des livrables concrets et un run mesuré. Le groupe allie l'agilité d'une structure à taille humaine avec les moyens d'une grande organisation, offrant à ses clients des interventions sur-mesure conçues pour passer à l'échelle. Par ailleurs, Silamir se singularise comme un \textbf{groupe créé et dirigé par des femmes}, régulièrement distingué pour sa gouvernance inclusive et son dynamisme entrepreneurial.
+
+
+
+
+%% -----------------------------------------------------------
+%% 1.1.3 Historique et croissance (Figure TikZ : Timeline)
+%% -----------------------------------------------------------
+\subsection{Historique et croissance}
+
+Depuis sa création, Silamir Group a connu une croissance soutenue, ponctuée par des acquisitions stratégiques qui ont enrichi son portefeuille d'expertises et élargi sa couverture géographique. La figure~\ref{fig:timeline_silamir} retrace les jalons majeurs de cette trajectoire.
+
+\begin{figure}[H]
+    \centering
+    \begin{tikzpicture}[
+        event/.style={draw=#1!50, rounded corners=5pt, fill=#1!8, minimum width=2.6cm, align=center, font=\tiny, line width=0.5pt, inner sep=5pt, text width=2.4cm},
+        yearnode/.style={circle, fill=#1!65, text=white, font=\scriptsize\bfseries, minimum size=0.8cm, inner sep=0, drop shadow={opacity=0.12}},
+    ]
+        % Ligne principale avec dégradé
+        \shade[left color=teal!40, right color=green!50!black!40, line width=2.5pt] (0, 0) rectangle (15, 0.08);
+
+        % 2011
+        \node[yearnode=teal] (y1) at (0, 0) {2011};
+        \node[event=teal, anchor=south] at (0, 0.7) {Création de\\Silamir Group\\par M. Figer\\et J. Soria};
+
+        % 2015
+        \node[yearnode=blue] (y2) at (3, 0) {2015};
+        \node[event=blue, anchor=north] at (3, -0.7) {Acquisition de\\l'agence\\Caiman Design};
+
+        % 2019
+        \node[yearnode=violet] (y3) at (6, 0) {2019};
+        \node[event=violet, anchor=south] at (6, 0.7) {Acquisition de\\Digital \& You (ESN)\\Implantation\\au Maroc};
+
+        % 2022
+        \node[yearnode=orange] (y4) at (9, 0) {2022};
+        \node[event=orange, anchor=north] at (9, -0.7) {Entrée de\\Naxicap Partners\\au capital\\du groupe};
+
+        % 2023
+        \node[yearnode=red] (y5) at (12, 0) {2023};
+        \node[event=red, anchor=south] at (12, 0.7) {Acquisition de\\Polarys (Data/IA)\\et FSystem\\(Cybersécurité)};
+
+        % 2024
+        \node[yearnode=green!60!black] (y6) at (15, 0) {2024};
+        \node[event=green!60!black, anchor=north] at (15, -0.7) {Lancement de\\Silamind (Microsoft)\\et Silamir Grow\\(Excellence Client)};
+    \end{tikzpicture}
+    \caption{Frise chronologique de Silamir Group}
+    \label{fig:timeline_silamir}
+\end{figure}
+
+Chacune de ces étapes a contribué à forger l'identité actuelle du groupe :
+
+\begin{itemize}
+    \item \textbf{2011} : Fondation par Muriel Figer et Juliette Soria, sur la conviction que l'immédiateté et l'incertitude étant devenues la norme, il est essentiel de mener les transformations vers des organisations capables d'évoluer en permanence.
+    \item \textbf{2015} : Acquisition de l'agence \textit{Caiman Design}, renforçant les compétences en design et expérience utilisateur.
+    \item \textbf{2019} : Acquisition de \textit{Digital \& You} (ESN) et ouverture du bureau de \textbf{Casablanca} au Maroc, marquant le début de l'internationalisation du groupe.
+    \item \textbf{2022} : Entrée de \textbf{Naxicap Partners} au capital, accélérant la stratégie de croissance externe et organique du groupe.
+    \item \textbf{2023} : Double acquisition stratégique de \textit{Polarys} (spécialiste Data \& IA, présent en France, Pologne et E.A.U.) et de \textit{FSystem} (spécialiste en cybersécurité, fondé en 1998).
+    \item \textbf{2024} : Lancement de deux nouvelles marques : \textit{Silamind} (pure player Microsoft) et \textit{Silamir Grow} (Excellence commerciale avec Salesforce).
+\end{itemize}
+
+
+%% -----------------------------------------------------------
+%% 1.1.4 Les quatre offres structurantes (Figure TikZ)
+%% -----------------------------------------------------------
+\subsection{Les quatre offres structurantes}
+
+Silamir structure son accompagnement autour de \textbf{quatre leviers de transformation} qui répondent chacun à un enjeu stratégique spécifique des entreprises. La figure~\ref{fig:offres_silamir} en propose une représentation visuelle.
+
+\begin{figure}[H]
+    \centering
+    \begin{tikzpicture}[
+        offerbox/.style={draw=#1!50, rounded corners=6pt, fill=#1!10, minimum width=3cm, minimum height=3.8cm, align=center, inner sep=8pt, line width=0.7pt, text width=2.8cm},
+        offertitle/.style={font=\small\bfseries, color=#1, align=center},
+        offerdesc/.style={font=\tiny, color=gray!70, align=center},
+        iconcirc/.style={circle, fill=#1!20, draw=#1!50, minimum size=0.9cm, inner sep=0, font=\footnotesize\bfseries, text=#1},
+    ]
+        % Titre central
+        \node[font=\normalsize\bfseries, color=gray!60] at (6.5, 4.3) {Quatre leviers de transformation};
+
+        % Offre 1 : Performance des Process
+        \node[offerbox=blue] (o1) at (0, 1) {};
+        \node[iconcirc=blue] at (0, 3) {P};
+        \node[offertitle=blue] at (0, 2.1) {Performance\\des Process};
+        \node[offerdesc] at (0, 0.5) {Améliorer les processus\\avec une vision\\métier augmentée\\par l'IA};
+
+        % Offre 2 : Performance Stratégique
+        \node[offerbox=teal] (o2) at (4.3, 1) {};
+        \node[iconcirc=teal] at (4.3, 3) {S};
+        \node[offertitle=teal] at (4.3, 2.1) {Performance\\Stratégique};
+        \node[offerdesc] at (4.3, 0.5) {Fiabiliser le pilotage\\et la gouvernance\\financière et\\stratégique};
+
+        % Offre 3 : Performance Technologique
+        \node[offerbox=violet] (o3) at (8.6, 1) {};
+        \node[iconcirc=violet] at (8.6, 3) {T};
+        \node[offertitle=violet] at (8.6, 2.1) {Performance\\Technologique};
+        \node[offerdesc] at (8.6, 0.5) {Structurer et\\déployer vos\\fondations Data,\\IA \& Cloud};
+
+        % Offre 4 : Excellence Client
+        \node[offerbox=orange] (o4) at (12.9, 1) {};
+        \node[iconcirc=orange] at (12.9, 3) {C};
+        \node[offertitle=orange] at (12.9, 2.1) {Excellence\\Client};
+        \node[offerdesc] at (12.9, 0.5) {Parcours clients\\plus performants\\grâce à la donnée\\et aux bons outils};
+
+        % Flèche de connexion
+        \draw[gray!20, line width=1.5pt, -{Stealth[length=4pt]}] (1.7, 1) -- (2.6, 1);
+        \draw[gray!20, line width=1.5pt, -{Stealth[length=4pt]}] (6, 1) -- (6.9, 1);
+        \draw[gray!20, line width=1.5pt, -{Stealth[length=4pt]}] (10.3, 1) -- (11.2, 1);
+    \end{tikzpicture}
+    \caption{Les quatre offres structurantes de Silamir Group}
+    \label{fig:offres_silamir}
+\end{figure}
+
+L'offre \textbf{Performance des Process}, directement liée au sujet de ce projet de fin d'études, vise à améliorer les processus opérationnels en combinant le \textbf{Process Mining} (partenaire Celonis), la \textbf{RPA} (partenaire UiPath) et l'automatisation intelligente par l'IA. C'est au sein de cette offre que s'inscrit notre mission d'optimisation du processus Order-to-Activate chez Bouygues Telecom.
+
+
+%% -----------------------------------------------------------
+%% 1.1.5 Domaines d'expertise (Figure TikZ : 2 colonnes)
+%% -----------------------------------------------------------
+\subsection{Domaines d'expertise}
+
+Silamir Group propose une offre globale articulée autour de \textbf{dix domaines d'expertise} complémentaires, couvrant l'ensemble du spectre de la transformation digitale :
+
+\begin{figure}[H]
+    \centering
+    \begin{tikzpicture}[
+        expbox/.style={draw=gray!30, rounded corners=4pt, fill=#1!8, minimum height=0.7cm, align=center, font=\scriptsize\bfseries, inner sep=5pt, text=#1, minimum width=3.8cm, line width=0.4pt},
+    ]
+        % Colonne gauche : Expertises Data & IA
+        \node[expbox=blue] (e1) at (0, 0) {Data \& BI};
+        \node[expbox=blue] (e2) at (0, -1) {Intelligence Artificielle};
+        \node[expbox=teal] (e3) at (0, -2) {Cloud};
+        \node[expbox=teal] (e4) at (0, -3) {Microsoft Cloud};
+        \node[expbox=red] (e5) at (0, -4) {Cybersécurité};
+
+        % Colonne droite : Expertises Métier
+        \node[expbox=violet] (e6) at (5.5, 0) {Stratégie \& Transformation};
+        \node[expbox=violet] (e7) at (5.5, -1) {EPM};
+        \node[expbox=orange] (e8) at (5.5, -2) {Run \& Exploitation};
+        \node[expbox=orange] (e9) at (5.5, -3) {Learning Solutions};
+        \node[expbox=green!50!black] (e10) at (5.5, -4) {Process Intelligence};
+
+        % Labels de catégorie
+        \node[font=\footnotesize\bfseries, color=blue!60] at (0, 0.8) {Pilier Technologique};
+        \node[font=\footnotesize\bfseries, color=violet!60] at (5.5, 0.8) {Pilier Métier \& Conseil};
+
+        % Cadre autour de Process Intelligence (lien avec le PFE)
+        \draw[green!50!black, line width=1.2pt, dashed, rounded corners=6pt] (-2.2, -4.5) rectangle (8, -3.5);
+        \node[font=\tiny\itshape, color=green!50!black, anchor=east] at (8, -4.7) {$\leftarrow$ Expertise directement liée au PFE};
+
+        % Accolade centrale
+        \draw[gray!30, line width=0.6pt] (2.2, 0.3) -- (2.75, -2) -- (2.2, -4.3);
+        \draw[gray!30, line width=0.6pt] (3.3, 0.3) -- (2.75, -2) -- (3.3, -4.3);
+    \end{tikzpicture}
+    \caption{Les dix domaines d'expertise de Silamir Group}
+    \label{fig:expertises_silamir}
+\end{figure}
+
+L'expertise en \textbf{Process Intelligence} est particulièrement pertinente dans le cadre de ce projet. Elle recouvre l'optimisation des processus métier à l'aide du \textbf{Process Mining} et de la RPA, en partenariat avec \textbf{Celonis} (leader mondial du Process Mining) et \textbf{UiPath} (leader de la RPA). Silamir a notamment réalisé des cas d'usage concrets en Process Mining pour l'amélioration de l'excellence commerciale dans l'industrie.
+
+
+%% -----------------------------------------------------------
+%% 1.1.6 Partenariats technologiques (Figure TikZ : grille)
+%% -----------------------------------------------------------
+\subsection{Partenariats technologiques}
+
+Silamir Group entretient des partenariats stratégiques de haut niveau avec les principaux éditeurs technologiques du marché. Ces partenariats premium garantissent à ses clients l'accès aux technologies les plus avancées, maîtrisées et alignées à leur trajectoire métier.
+
+\begin{figure}[H]
+    \centering
+    \begin{tikzpicture}[
+        partbox/.style={draw=gray!25, rounded corners=5pt, fill=white, minimum width=2.6cm, minimum height=1.1cm, align=center, font=\scriptsize\bfseries, inner sep=4pt, line width=0.4pt, drop shadow={opacity=0.06}},
+    ]
+        % Ligne 1 : Partenaires majeurs
+        \node[partbox, fill=blue!5] (p1) at (0, 0) {Microsoft\\{\tiny\color{gray} Azure, Power Platform}};
+        \node[partbox, fill=orange!5] (p2) at (3.3, 0) {AWS\\{\tiny\color{gray} Cloud certifié}};
+        \node[partbox, fill=cyan!5] (p3) at (6.6, 0) {Salesforce\\{\tiny\color{gray} CRM, Excellence Client}};
+        \node[partbox, fill=white!5] (p4) at (9.9, 0) {Snowflake\\{\tiny\color{gray} Data Cloud}};
+
+        % Ligne 2 : Partenaires spécialisés
+        \node[partbox, fill=green!5] (p5) at (0, -1.8) {\color{green!50!black}Celonis\\{\tiny\color{gray} Process Mining}};
+        \node[partbox, fill=red!5] (p6) at (3.3, -1.8) {UiPath\\{\tiny\color{gray} RPA}};
+        \node[partbox, fill=violet!5] (p7) at (6.6, -1.8) {Pigment\\{\tiny\color{gray} EPM -- 3 étoiles}};
+        \node[partbox, fill=gray!5] (p8) at (9.9, -1.8) {CyberArk / Tanium\\{\tiny\color{gray} Sécurité}};
+
+        % Cadre Celonis (lien PFE)
+        \draw[green!50!black, line width=1pt, dashed, rounded corners=4pt] (-1.6, -2.6) rectangle (1.6, -1);
+        \node[font=\tiny\itshape, color=green!50!black] at (0, -2.9) {Partenaire clé du projet};
+
+        % Titre
+        \node[font=\footnotesize\bfseries, color=gray!50] at (5, 1) {Ecosystème de partenaires technologiques premium};
+    \end{tikzpicture}
+    \caption{Partenaires technologiques de Silamir Group}
+    \label{fig:partenaires_silamir}
+\end{figure}
+
+
+%% -----------------------------------------------------------
+%% 1.1.7 Secteurs d'intervention (Figure TikZ : grille 3x3)
+%% -----------------------------------------------------------
+\subsection{Secteurs d'intervention et clients}
+
+Le groupe intervient dans \textbf{neuf secteurs d'activité} majeurs, au service de plus de \textbf{200 organisations clientes}, dont les deux tiers du CAC~40. La figure~\ref{fig:secteurs_silamir} illustre cette diversité sectorielle.
+
+\begin{figure}[H]
+    \centering
+    \begin{tikzpicture}[
+        secbox/.style={draw=#1!40, rounded corners=4pt, fill=#1!8, minimum width=3.6cm, minimum height=0.7cm, align=center, font=\scriptsize\bfseries, inner sep=4pt, text=#1, line width=0.4pt},
+    ]
+        % Grille 3x3
+        \node[secbox=blue] at (0, 0) {Télécoms \& Médias};
+        \node[secbox=teal] at (4.5, 0) {Banque \& Finance};
+        \node[secbox=violet] at (9, 0) {Assurance \& Mutuelles};
+
+        \node[secbox=orange] at (0, -1.2) {Retail \& Distribution};
+        \node[secbox=red] at (4.5, -1.2) {Energie};
+        \node[secbox=cyan] at (9, -1.2) {Industrie};
+
+        \node[secbox=green!50!black] at (0, -2.4) {Mobilité \& Logistique};
+        \node[secbox=brown] at (4.5, -2.4) {Private Equity};
+        \node[secbox=gray] at (9, -2.4) {Secteur Public};
+
+        % Clients de référence
+        \node[draw=blue!30, rounded corners=6pt, fill=blue!3, inner sep=8pt, text width=12cm, align=left, font=\tiny] at (4.5, -4) {
+            \textbf{\small Clients de référence :} Bouygues Telecom, Allianz, Swisscom, Teleperformance, Solocal, PMU, FDJ, DHL, Carrefour, Kering, Dior, Galeries Lafayette, Sanofi, Servier, Pernod Ricard, Club Med, Adecco, Le Bon Coin, OCP, Coca-Cola, Etam\ldots
+        };
+    \end{tikzpicture}
+    \caption{Secteurs d'intervention et clients de référence}
+    \label{fig:secteurs_silamir}
+\end{figure}
+
+Dans le secteur des \textbf{Télécommunications \& Médias}, Silamir accompagne notamment \textbf{Bouygues Telecom} dans l'automatisation de ses parcours clients, générant des économies substantielles. C'est précisément dans ce contexte que s'inscrit notre projet d'optimisation du processus Order-to-Activate par le Process Mining.
+
+
+%% -----------------------------------------------------------
+%% 1.1.8 Implantations géographiques (Figure TikZ : Carte)
+%% -----------------------------------------------------------
+\subsection{Implantations géographiques}
+
+Silamir Group est présent à l'international avec \textbf{six implantations stratégiques} réparties entre la France, le Maroc et la Pologne. Le groupe accompagne ses clients dans plus de 30 pays et met à leur disposition des centres de services nearshore offrant des talents hautement qualifiés sur les mêmes fuseaux horaires.
+
+\begin{figure}[H]
+    \centering
+    \begin{tikzpicture}[
+        locpin/.style={circle, fill=#1, draw=#1, minimum size=0.35cm, inner sep=0, drop shadow={opacity=0.12}},
+        loclbl/.style={font=\tiny\bfseries, color=#1, align=center},
+        country/.style={rounded corners=5pt, fill=gray!6, draw=gray!15, line width=0.3pt},
+    ]
+        % Fond
+        \fill[blue!2, rounded corners=12pt] (-5.5, -4) rectangle (7.5, 5.5);
+
+        % France
+        \path[country] (-3.2, -0.2) -- (-1.2, 2.8) -- (1.5, 3.2) -- (2.8, 1.2) -- (1.8, -0.8) -- (-0.8, -0.8) -- (-2.8, 0.2) -- cycle;
+        \fill[blue!4] (-3.2, -0.2) -- (-1.2, 2.8) -- (1.5, 3.2) -- (2.8, 1.2) -- (1.8, -0.8) -- (-0.8, -0.8) -- (-2.8, 0.2) -- cycle;
+        \node[font=\scriptsize, color=gray!30] at (0.2, 1.2) {FRANCE};
+
+        % Pologne
+        \fill[teal!4, country] (3.5, 2.8) -- (5.8, 3.2) -- (6.2, 1.5) -- (4.5, 1.2) -- (3.5, 2) -- cycle;
+        \node[font=\scriptsize, color=gray!30] at (4.9, 2.3) {POLOGNE};
+
+        % Maroc
+        \fill[orange!4, country] (-4.2, -3.2) -- (-1.5, -3.2) -- (-1, -1.5) -- (-3, -1.5) -- (-4.2, -2.2) -- cycle;
+        \node[font=\scriptsize, color=gray!30] at (-2.6, -2.3) {MAROC};
+
+        % --- Pins France ---
+        \node[locpin=red!70] (paris) at (0.5, 2.5) {};
+        \node[loclbl=red!70, anchor=south] at (0.5, 2.9) {Paris (Siège)\\{\tiny 12 rue Jules César, 75012}};
+
+        \node[locpin=blue!60] (nancy) at (2, 2.2) {};
+        \node[loclbl=blue!60, anchor=west] at (2.3, 2.2) {Nancy};
+
+        \node[locpin=blue!60] (nantes) at (-1.5, 1) {};
+        \node[loclbl=blue!60, anchor=east] at (-1.8, 1) {Nantes};
+
+        \node[locpin=blue!60] (rennes) at (-2, 2) {};
+        \node[loclbl=blue!60, anchor=east] at (-2.3, 2) {Rennes};
+
+        % --- Pin Pologne ---
+        \node[locpin=teal!70] (cracovie) at (4.9, 1.7) {};
+        \node[loclbl=teal!70, anchor=north] at (4.9, 1.3) {Cracovie\\{\tiny Centre nearshore}};
+
+        % --- Pin Maroc ---
+        \node[locpin=orange!70] (casa) at (-2.3, -1.8) {};
+        \node[loclbl=orange!70, anchor=north] at (-2.3, -2.1) {Casablanca\\{\tiny Sidi Maarouf -- Nearshore}};
+
+        % Connexions depuis Paris
+        \draw[gray!20, dashed, line width=0.5pt] (paris) -- (nancy);
+        \draw[gray!20, dashed, line width=0.5pt] (paris) -- (nantes);
+        \draw[gray!20, dashed, line width=0.5pt] (paris) -- (rennes);
+        \draw[gray!20, dashed, line width=0.5pt] (paris) -- (cracovie);
+        \draw[gray!20, dashed, line width=0.5pt] (paris) -- (casa);
+
+        % Légende
+        \node[locpin=red!70] at (-4.5, 4.5) {};
+        \node[font=\tiny, anchor=west] at (-4.2, 4.5) {Siège social};
+        \node[locpin=blue!60] at (-4.5, 4) {};
+        \node[font=\tiny, anchor=west] at (-4.2, 4) {Bureau régional};
+        \node[locpin=teal!70] at (-1.5, 4.5) {};
+        \node[font=\tiny, anchor=west] at (-1.2, 4.5) {Nearshore (Pologne)};
+        \node[locpin=orange!70] at (-1.5, 4) {};
+        \node[font=\tiny, anchor=west] at (-1.2, 4) {Nearshore (Maroc)};
+    \end{tikzpicture}
+    \caption{Implantations géographiques de Silamir Group}
+    \label{fig:implantations_map}
+\end{figure}
+
+
+
+
+%% -----------------------------------------------------------
+%% 1.1.11 Positionnement par rapport au projet
+%% -----------------------------------------------------------
+\subsection{Positionnement par rapport au projet}
+
+Le choix de Silamir Group comme organisme d'accueil pour ce projet de fin d'études est particulièrement pertinent et s'appuie sur quatre facteurs déterminants :
+
+\begin{enumerate}
+    \item \textbf{Expertise avérée en Process Mining} : Silamir est partenaire officiel de \textbf{Celonis}, le leader mondial du Process Mining et de l'Execution Management. Le groupe dispose d'une offre dédiée à la \textit{Performance des Processus} et a déjà réalisé des cas d'usage concrets en Process Mining, notamment pour l'amélioration de l'excellence commerciale dans le secteur industriel.
+
+    \item \textbf{Présence stratégique dans le secteur télécom} : Silamir accompagne des acteurs majeurs des télécommunications, dont \textbf{Bouygues Telecom}, dans l'automatisation de leurs parcours clients. Le site officiel du groupe met en avant des résultats concrets : des millions d'euros d'économies réalisées grâce à l'automatisation des parcours client dans un grand groupe télécom.
+
+    \item \textbf{Double compétence métier-tech} : l'approche hybride de Silamir, combinant expertise conseil métier et maîtrise technologique de pointe, est parfaitement alignée avec les exigences d'un projet de Process Mining, qui nécessite à la fois une compréhension fine des processus opérationnels et une maîtrise des outils d'analyse de données.
+
+    \item \textbf{Culture de l'innovation et IA agentique} : avec son positionnement fort sur l'IA agentique (guide publié en janvier 2026, événement FORWARD à Station~F), Silamir offre un environnement stimulant pour explorer les frontières du Process Mining augmenté par l'intelligence artificielle.
+\end{enumerate}
+
+
+\end{document}
