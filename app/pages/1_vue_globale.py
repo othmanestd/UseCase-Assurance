@@ -17,9 +17,9 @@ sys.path.insert(0, str(Path(__file__).parent.parent.parent))
 from app.theme import (
     apply_theme,
     brand_block,
+    page_header,
     section_header,
     sidebar_label,
-    theme_toggle,
 )
 from src.celonis_connector import load_data_smart, show_data_status
 from src.feature_labels import labels_for
@@ -30,8 +30,10 @@ from src.model import load_model, prepare_train_data
 theme = apply_theme()
 brand_block()
 
-st.title("Synthèse modèle")
-st.caption("Vue d'ensemble du scoring prédictif — complémentaire au dashboard Celonis")
+theme = page_header(
+    "Synthèse modèle",
+    "Vue d'ensemble du scoring prédictif — complémentaire au dashboard Celonis",
+)
 
 
 @st.cache_data(ttl=600, show_spinner="Chargement…")
@@ -239,5 +241,3 @@ st.plotly_chart(fig, use_container_width=True)
 st.sidebar.divider()
 sidebar_label("Données")
 show_data_status()
-with st.sidebar.expander("Apparence", expanded=False):
-    theme = theme_toggle()

@@ -406,6 +406,26 @@ def sidebar_label(text: str) -> None:
     )
 
 
+def page_header(title: str, subtitle: str | None = None) -> dict:
+    """Header de page : titre à gauche, toggle clair/sombre à droite.
+
+    Remplace le couple st.title() + st.caption() en début de page.
+    Renvoie le dict du thème courant (potentiellement modifié par le toggle).
+    """
+    col_left, col_right = st.columns([6, 2])
+    with col_left:
+        st.title(title)
+        if subtitle:
+            st.caption(subtitle)
+    with col_right:
+        st.markdown(
+            '<div style="display:flex; justify-content:flex-end; padding-top:0.9rem;"></div>',
+            unsafe_allow_html=True,
+        )
+        theme = theme_toggle()
+    return theme
+
+
 def brand_block(initials: str = "Si", name: str = "SILAMIR", sub: str = "PFE · Insatisfaction") -> None:
     """Bloc logo + branding en haut de sidebar."""
     st.sidebar.markdown(

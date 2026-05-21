@@ -12,9 +12,9 @@ sys.path.insert(0, str(Path(__file__).parent.parent.parent))
 from app.theme import (
     apply_theme,
     brand_block,
+    page_header,
     section_header,
     sidebar_label,
-    theme_toggle,
 )
 from src.celonis_connector import load_data_smart, show_data_status
 from src.feature_labels import format_value, label_for
@@ -25,8 +25,10 @@ from src.shap_explainer import compute_shap_values, explain_single_prediction
 theme = apply_theme()
 brand_block()
 
-st.title("Prédiction par dossier")
-st.caption("Score de risque individuel et facteurs explicatifs")
+theme = page_header(
+    "Prédiction par dossier",
+    "Score de risque individuel et facteurs explicatifs",
+)
 
 
 @st.cache_data(ttl=600, show_spinner="Chargement…")
@@ -294,5 +296,3 @@ if selected_claim:
 st.sidebar.divider()
 sidebar_label("Données")
 show_data_status()
-with st.sidebar.expander("Apparence", expanded=False):
-    theme = theme_toggle()

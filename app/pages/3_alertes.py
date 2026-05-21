@@ -12,9 +12,9 @@ sys.path.insert(0, str(Path(__file__).parent.parent.parent))
 from app.theme import (
     apply_theme,
     brand_block,
+    page_header,
     section_header,
     sidebar_label,
-    theme_toggle,
 )
 from src.celonis_connector import load_data_smart, show_data_status
 from src.feature_labels import label_for, rename_columns
@@ -24,8 +24,10 @@ from src.model import load_model, prepare_train_data
 theme = apply_theme()
 brand_block()
 
-st.title("Alertes")
-st.caption("Dossiers à risque élevé nécessitant une action proactive")
+theme = page_header(
+    "Alertes",
+    "Dossiers à risque élevé nécessitant une action proactive",
+)
 
 
 @st.cache_data(ttl=600, show_spinner="Calcul des scores…")
@@ -222,5 +224,3 @@ st.download_button(
 st.sidebar.divider()
 sidebar_label("Données")
 show_data_status()
-with st.sidebar.expander("Apparence", expanded=False):
-    theme = theme_toggle()

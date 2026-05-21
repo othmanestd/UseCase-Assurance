@@ -14,14 +14,16 @@ st.set_page_config(
     initial_sidebar_state="expanded",
 )
 
-from app.theme import apply_theme, brand_block, section_header, sidebar_label, theme_toggle
+from app.theme import apply_theme, brand_block, page_header, section_header, sidebar_label
 
 
 theme = apply_theme()
 brand_block()
 
-st.title("Prédiction de l'insatisfaction client")
-st.caption("Sinistres Bris de Glace — Assurance Automobile · Silamir")
+theme = page_header(
+    "Prédiction de l'insatisfaction client",
+    "Sinistres Bris de Glace — Assurance Automobile · Silamir",
+)
 
 
 # === Sidebar ===
@@ -110,7 +112,3 @@ st.markdown(
 )
 
 
-# === Sidebar footer ===
-st.sidebar.divider()
-with st.sidebar.expander("Apparence", expanded=False):
-    theme = theme_toggle()
