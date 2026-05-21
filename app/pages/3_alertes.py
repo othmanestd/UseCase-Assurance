@@ -22,13 +22,7 @@ st.title("Alertes")
 st.caption("Dossiers à risque élevé nécessitant une action proactive")
 
 
-# === Sidebar ===
-st.sidebar.markdown("### Apparence")
-theme = theme_toggle()
-st.sidebar.divider()
-
-show_data_status()
-st.sidebar.divider()
+# === Sidebar (filtres en haut, apparence en bas) ===
 
 
 @st.cache_data(ttl=600, show_spinner="Calcul des scores…")
@@ -45,7 +39,7 @@ df_raw, _ = load_and_predict()
 
 
 # === Sidebar : Filtres alertes ===
-st.sidebar.markdown("### Filtres alertes")
+st.sidebar.markdown("### 🔍 Filtres alertes")
 
 seuil = st.sidebar.slider(
     "Seuil d'alerte (score de risque)",
@@ -64,10 +58,14 @@ show_only_real = st.sidebar.checkbox(
     "Uniquement les vrais insatisfaits", value=False
 )
 
-st.sidebar.divider()
 if st.sidebar.button("🔄 Rafraîchir", key="refresh_alertes", use_container_width=True):
     st.cache_data.clear()
     st.rerun()
+
+st.sidebar.divider()
+show_data_status()
+with st.sidebar.expander("⚙️ Apparence", expanded=False):
+    theme = theme_toggle()
 
 
 # === Application des filtres ===

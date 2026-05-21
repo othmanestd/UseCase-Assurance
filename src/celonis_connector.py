@@ -15,46 +15,17 @@ from datetime import datetime
 from src.utils import RAW_DATA_DIR, PROCESSED_DATA_DIR
 
 
-# Chemins potentiels du fichier de secrets Streamlit
-_SECRETS_PATHS = [
-    Path.home() / ".streamlit" / "secrets.toml",
-    Path(__file__).parent.parent / ".streamlit" / "secrets.toml",
-    Path(__file__).parent.parent / "app" / ".streamlit" / "secrets.toml",
-]
-
-
-def _has_secrets_file() -> bool:
-    """Vérifie si un fichier secrets.toml existe avant d'y accéder via st.secrets.
-
-    Sans cette garde, Streamlit affiche une bannière rouge 'No secrets found'
-    à chaque accès en l'absence du fichier.
-    """
-    return any(p.exists() for p in _SECRETS_PATHS)
-
-
-def _get_secret(key: str, default):
-    """Accès sûr à st.secrets — silencieux si le fichier n'existe pas."""
-    if not _has_secrets_file():
-        return default
-    try:
-        return st.secrets.get(key, default)
-    except Exception:
-        return default
-
-
 def get_data_config() -> dict:
-    """Récupère la configuration du connecteur de données."""
-    config = {
-        "data_dir": str(RAW_DATA_DIR),
+    """Récupère la configuration du connecteur de données.
+
+    Pas d'appel à st.secrets ici : Streamlit affiche une bannière rouge
+    quand aucun secrets.toml n'est trouvé à ses chemins attendus.
+    Override via variable d'environnement PFE_DATA_DIR uniquement.
+    """
+    return {
+        "data_dir": os.getenv("PFE_DATA_DIR", str(RAW_DATA_DIR)),
         "auto_refresh": True,
     }
-    config["data_dir"] = _get_secret("DATA_DIR", config["data_dir"])
-
-    env_dir = os.getenv("PFE_DATA_DIR")
-    if env_dir:
-        config["data_dir"] = env_dir
-
-    return config
 
 
 def get_data_freshness() -> dict:
@@ -110,38 +81,25 @@ def get_data_freshness() -> dict:
 
 
 def show_data_status() -> None:
-    """Affiche un badge discret du statut des données dans la sidebar.
-
-    Logique :
-    - Si processed CSV présent : on s'appuie dessus, statut OK même sans raw.
-    - Si seulement raw : on affiche l'âge des raw.
-    - Si rien : erreur claire.
-    """
+    """Affiche un statut compact des données dans la sidebar (juste une caption)."""
     freshness = get_data_freshness()
     processed = freshness["processed"]
 
     if processed and processed["exists"]:
         age_h = processed["age_hours"]
-        if age_h < 24:
-            label = f"Données à jour ({age_h:.0f}h)"
-            st.sidebar.success(label, icon="✅")
-        elif age_h < 24 * 7:
-            label = f"Données : {age_h/24:.0f} jours"
-            st.sidebar.info(label, icon="ℹ️")
+        if age_h < 48:
+            label = f"📊 Données à jour"
         else:
-            label = f"Données : {age_h/24:.0f} jours"
-            st.sidebar.warning(label, icon="⚠️")
+            label = f"📊 Données · {age_h/24:.0f} j"
+        st.sidebar.caption(label)
         return
 
     if freshness["raw_all_present"]:
         latest = freshness["latest_raw_update"]
-        st.sidebar.info(
-            f"Source brute · MAJ {latest.strftime('%d/%m/%Y')}",
-            icon="📂",
-        )
+        st.sidebar.caption(f"📂 Source brute · {latest.strftime('%d/%m/%Y')}")
         return
 
-    st.sidebar.error("Aucune donnée disponible", icon="🚫")
+    st.sidebar.caption("🚫 Aucune donnée disponible")
 
 
 def load_data_smart() -> tuple:

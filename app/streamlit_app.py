@@ -19,17 +19,17 @@ from app.theme import apply_theme, theme_toggle, section_header
 # === Init thème ===
 theme = apply_theme()
 
-# === Sidebar : thème ===
-st.sidebar.markdown("### Apparence")
-theme = theme_toggle()
-st.sidebar.divider()
 st.sidebar.markdown("### Navigation")
 st.sidebar.caption(
     "Utilisez les pages ci-dessus pour explorer :\n\n"
-    "• **Vue globale** — KPI & drivers\n\n"
+    "• **Vue globale** — Synthèse modèle & drivers\n\n"
     "• **Prédiction dossier** — Score + SHAP\n\n"
     "• **Alertes** — Dossiers prioritaires"
 )
+
+st.sidebar.divider()
+with st.sidebar.expander("⚙️ Apparence", expanded=False):
+    theme = theme_toggle()
 
 
 # === Header ===

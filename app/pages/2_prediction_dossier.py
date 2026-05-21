@@ -25,13 +25,7 @@ st.title("Prédiction par dossier")
 st.caption("Score de risque et explication individuelle (SHAP) pour un dossier sélectionné")
 
 
-# === Sidebar ===
-st.sidebar.markdown("### Apparence")
-theme = theme_toggle()
-st.sidebar.divider()
-
-show_data_status()
-st.sidebar.divider()
+# === Sidebar (filtres en haut, apparence en bas) ===
 
 
 @st.cache_data(ttl=600, show_spinner="Chargement des données…")
@@ -53,7 +47,7 @@ model, explainer, shap_values, X = get_model_and_shap(df)
 
 
 # === Sidebar : Filtrage rapide ===
-st.sidebar.markdown("### Filtrage rapide")
+st.sidebar.markdown("### 🔍 Filtrage rapide")
 risk_filter = st.sidebar.radio(
     "Niveau de risque",
     ["Tous", "Risque élevé (>0.6)", "Risque moyen (0.3–0.6)", "Risque faible (<0.3)"],
@@ -73,11 +67,15 @@ elif risk_filter.startswith("Risque faible"):
 else:
     filtered_ids = df["claim_id"].tolist()
 
-st.sidebar.divider()
 if st.sidebar.button("🔄 Rafraîchir", key="refresh_pred", use_container_width=True):
     st.cache_data.clear()
     st.cache_resource.clear()
     st.rerun()
+
+st.sidebar.divider()
+show_data_status()
+with st.sidebar.expander("⚙️ Apparence", expanded=False):
+    theme = theme_toggle()
 
 
 if len(filtered_ids) == 0:

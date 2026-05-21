@@ -201,18 +201,17 @@ def apply_theme() -> dict:
     return theme
 
 
-def theme_toggle(location: str = "sidebar") -> dict:
-    """Affiche le sélecteur clair/sombre. Doit être appelé APRÈS apply_theme().
+def theme_toggle() -> dict:
+    """Affiche le sélecteur clair/sombre dans le container courant.
 
-    Retourne le dict du thème (potentiellement nouveau si l'utilisateur a basculé).
+    Appeler depuis : un `with st.sidebar.expander(...)` ou directement en sidebar.
+    Doit être appelé APRÈS apply_theme().
     """
-    container = st.sidebar if location == "sidebar" else st
     current = st.session_state.get("theme_mode", "light")
-
     options = [f"{THEMES['light']['icon']} Clair", f"{THEMES['dark']['icon']} Sombre"]
     idx = 0 if current == "light" else 1
 
-    choice = container.radio(
+    choice = st.radio(
         "Thème",
         options,
         index=idx,
