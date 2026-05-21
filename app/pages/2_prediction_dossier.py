@@ -81,16 +81,45 @@ if len(filtered_ids) == 0:
 
 
 # ============================================================
-# Section 1 — Sélecteur de dossier
+# Section 1 — Recherche + sélecteur de dossier
 # ============================================================
 section_header(
     "Dossier",
-    f"{len(filtered_ids):,} dossiers disponibles".replace(",", " "),
+    f"{len(filtered_ids):,} dossiers disponibles dans le filtre actif".replace(",", " "),
 )
+
+search_col, count_col = st.columns([3, 1])
+
+with search_col:
+    search_query = st.text_input(
+        "Rechercher",
+        placeholder="🔍 Tapez un ID de dossier (ex: 576...)",
+        label_visibility="collapsed",
+        key="search_dossier",
+    )
+
+# Filtre la liste selon la recherche
+if search_query:
+    q = search_query.strip().lower()
+    matching_ids = [cid for cid in filtered_ids if q in str(cid).lower()]
+else:
+    matching_ids = filtered_ids
+
+with count_col:
+    st.markdown(
+        f"<div style='text-align:right; padding-top:0.4rem; color:{theme['text_muted']}; "
+        f"font-size:0.85rem;'>{len(matching_ids):,} résultat{'s' if len(matching_ids) > 1 else ''}"
+        f"</div>".replace(",", " "),
+        unsafe_allow_html=True,
+    )
+
+if len(matching_ids) == 0:
+    st.warning(f"Aucun dossier ne correspond à « {search_query} ». Modifiez votre recherche.")
+    st.stop()
 
 selected_claim = st.selectbox(
     "ID Dossier",
-    filtered_ids,
+    matching_ids,
     label_visibility="collapsed",
 )
 
