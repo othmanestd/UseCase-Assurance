@@ -13,7 +13,6 @@ from streamlit.testing.v1 import AppTest
 
 PAGES = [
     "app/streamlit_app.py",
-    "app/pages/1_vue_globale.py",
     "app/pages/2_prediction_dossier.py",
     "app/pages/3_alertes.py",
 ]

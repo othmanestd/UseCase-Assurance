@@ -7,8 +7,9 @@ data/processed/*.png
 
 # Models (binary, too large)
 models/*.joblib
-# Exception : modele entraine necessaire au runtime du dashboard
+# Exception : modeles entraines necessaires au runtime du dashboard
 !models/xgboost_insatisfaction.joblib
+!models/rf_delai_traitement.joblib
 
 # Secrets (NEVER commit)
 app/.streamlit/secrets.toml
