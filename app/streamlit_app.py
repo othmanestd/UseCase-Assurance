@@ -26,18 +26,7 @@ theme = page_header(
 )
 
 
-# === Sidebar ===
-sidebar_label("Navigation")
-st.sidebar.markdown(
-    """
-    <div style="line-height:1.9; font-size:0.9rem;">
-    📊 <b>Vue globale</b> — synthèse modèle<br/>
-    🔬 <b>Prédiction dossier</b> — score + SHAP<br/>
-    🚨 <b>Alertes</b> — dossiers prioritaires
-    </div>
-    """,
-    unsafe_allow_html=True,
-)
+# La navigation native Streamlit suffit (st.logo place le brand au-dessus)
 
 
 # === Contexte ===

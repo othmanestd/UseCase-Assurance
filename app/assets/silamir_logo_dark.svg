@@ -1,0 +1,13 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="170" height="44" viewBox="0 0 170 44">
+  <defs>
+    <linearGradient id="grad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#6B7FFF"/>
+      <stop offset="100%" stop-color="#A78BFA"/>
+    </linearGradient>
+  </defs>
+  <circle cx="22" cy="22" r="18" fill="url(#grad)"/>
+  <text x="22" y="27" text-anchor="middle" fill="#FFFFFF"
+        font-family="Inter, system-ui, sans-serif" font-weight="700" font-size="14">Si</text>
+  <text x="50" y="28" fill="#E6E9EF"
+        font-family="Inter, system-ui, sans-serif" font-weight="700" font-size="17" letter-spacing="0.04em">SILAMIR</text>
+</svg>

@@ -7,13 +7,20 @@ au-dessus d'un gros chiffre bold.
 Usage dans une page :
     from app.theme import apply_theme, theme_toggle, section_header, brand_block
     theme = apply_theme()
-    brand_block()  # logo en sidebar
+    brand_block()  # logo en HAUT de sidebar (au-dessus de la nav native)
     section_header("Mon titre", "Sous-titre")
 """
 
 from __future__ import annotations
 
+from pathlib import Path
+
 import streamlit as st
+
+
+_ASSETS_DIR = Path(__file__).parent / "assets"
+_LOGO_LIGHT = _ASSETS_DIR / "silamir_logo_light.svg"
+_LOGO_DARK = _ASSETS_DIR / "silamir_logo_dark.svg"
 
 
 THEMES: dict[str, dict] = {
@@ -241,12 +248,18 @@ def _css_for(theme: dict) -> str:
         font-size: 0.88rem;
     }}
 
-    /* === Toggle switch (theme toggle) === */
+    /* === Toggle switch (theme toggle) — couleur de texte forcee partout === */
+    [data-testid="stToggle"],
+    [data-testid="stToggle"] *,
     [data-testid="stToggle"] label,
-    [data-testid="stToggle"] label > div {{
+    [data-testid="stToggle"] label *,
+    [data-testid="stToggle"] [data-testid="stWidgetLabel"],
+    [data-testid="stToggle"] [data-testid="stWidgetLabel"] * {{
         color: {theme["text"]} !important;
+    }}
+    [data-testid="stToggle"] [data-testid="stWidgetLabel"] p {{
         font-size: 0.88rem !important;
-        font-weight: 500;
+        font-weight: 500 !important;
     }}
     [data-testid="stToggle"] {{
         display: flex;
@@ -384,13 +397,16 @@ def apply_theme() -> dict:
 
 
 def theme_toggle() -> dict:
-    """Switch clair/sombre — natif Streamlit, look propre dans les deux modes."""
+    """Switch clair/sombre avec label adaptatif (decrit l'ACTION a effectuer)."""
     if "theme_mode" not in st.session_state:
         st.session_state.theme_mode = "light"
     current = st.session_state.theme_mode
 
+    # Label = ce vers quoi on bascule si on clique
+    label = "☀️ Mode clair" if current == "dark" else "🌙 Mode sombre"
+
     is_dark = st.toggle(
-        "🌙 Mode sombre",
+        label,
         value=(current == "dark"),
         label_visibility="visible",
     )
@@ -440,17 +456,25 @@ def page_header(title: str, subtitle: str | None = None) -> dict:
     return theme
 
 
-def brand_block(initials: str = "Si", name: str = "SILAMIR", sub: str = "PFE · Insatisfaction") -> None:
-    """Bloc logo + branding en haut de sidebar."""
-    st.sidebar.markdown(
-        f"""
-        <div class="brand-block">
-            <div class="brand-circle">{initials}</div>
-            <div>
-                <div class="brand-text">{name}</div>
-                <div class="brand-sub">{sub}</div>
-            </div>
-        </div>
-        """,
-        unsafe_allow_html=True,
-    )
+def brand_block(*args, **kwargs) -> None:
+    """Place le logo SILAMIR EN HAUT de la sidebar via st.logo().
+
+    Streamlit's st.logo() est la seule API qui place un element AU-DESSUS
+    de la navigation native du multi-page app.
+
+    On choisit le SVG en fonction du theme courant pour garder un bon contraste
+    (texte 'SILAMIR' noir sur fond clair, blanc sur fond sombre).
+
+    Signature compatible avec l'ancien brand_block(initials, name, sub) :
+    les arguments sont ignores, le logo SVG fixe est utilise.
+    """
+    mode = st.session_state.get("theme_mode", "light")
+    logo_path = _LOGO_DARK if mode == "dark" else _LOGO_LIGHT
+    try:
+        st.logo(str(logo_path), size="medium")
+    except Exception:
+        # Fallback texte si st.logo n'est pas dispo (Streamlit < 1.31)
+        st.sidebar.markdown(
+            '<div style="font-weight:700; font-size:1.1rem; padding:0.5rem 0;">SILAMIR</div>',
+            unsafe_allow_html=True,
+        )
