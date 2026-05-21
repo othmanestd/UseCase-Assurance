@@ -1,13 +1,10 @@
-"""Prédiction par dossier : score, explication SHAP, détails métier."""
+"""Prédiction par dossier : score (jauge), explication SHAP, détails métier."""
 
 import sys
 from pathlib import Path
 
-import matplotlib
-matplotlib.use("Agg")
-import matplotlib.pyplot as plt
 import pandas as pd
-import shap
+import plotly.graph_objects as go
 import streamlit as st
 
 sys.path.insert(0, str(Path(__file__).parent.parent.parent))
@@ -20,7 +17,7 @@ from app.theme import (
     theme_toggle,
 )
 from src.celonis_connector import load_data_smart, show_data_status
-from src.feature_labels import format_value, label_for, labels_for
+from src.feature_labels import format_value, label_for
 from src.model import load_model, prepare_train_data
 from src.shap_explainer import compute_shap_values, explain_single_prediction
 
@@ -29,7 +26,7 @@ theme = apply_theme()
 brand_block()
 
 st.title("Prédiction par dossier")
-st.caption("Score de risque et explication individuelle (SHAP)")
+st.caption("Score de risque individuel et facteurs explicatifs")
 
 
 @st.cache_data(ttl=600, show_spinner="Chargement…")
@@ -83,7 +80,9 @@ if len(filtered_ids) == 0:
     st.stop()
 
 
-# === Sélecteur + KPI ===
+# ============================================================
+# Section 1 — Sélecteur de dossier
+# ============================================================
 section_header(
     "Dossier",
     f"{len(filtered_ids):,} dossiers disponibles".replace(",", " "),
@@ -95,30 +94,111 @@ selected_claim = st.selectbox(
     label_visibility="collapsed",
 )
 
+
+def _build_gauge(value_pct: float, theme: dict) -> go.Figure:
+    """Construit une jauge circulaire moderne pour le score de risque."""
+    if value_pct > 60:
+        bar_color = theme["accent_red"]
+    elif value_pct > 30:
+        bar_color = theme["accent_orange"]
+    else:
+        bar_color = theme["accent_green"]
+
+    fig = go.Figure(
+        go.Indicator(
+            mode="gauge+number",
+            value=value_pct,
+            number={
+                "suffix": "%",
+                "font": {
+                    "size": 54,
+                    "color": theme["text"],
+                    "family": "Inter, sans-serif",
+                },
+            },
+            domain={"x": [0, 1], "y": [0, 1]},
+            gauge={
+                "axis": {
+                    "range": [0, 100],
+                    "tickwidth": 1,
+                    "tickcolor": theme["text_muted"],
+                    "tickfont": {"size": 11, "color": theme["text_muted"]},
+                    "tickvals": [0, 30, 60, 100],
+                    "ticktext": ["0", "30", "60", "100"],
+                },
+                "bar": {"color": bar_color, "thickness": 0.32},
+                "bgcolor": "rgba(0,0,0,0)",
+                "borderwidth": 0,
+                "steps": [
+                    {"range": [0, 30], "color": "rgba(16, 185, 129, 0.16)"},
+                    {"range": [30, 60], "color": "rgba(245, 158, 11, 0.16)"},
+                    {"range": [60, 100], "color": "rgba(239, 68, 68, 0.16)"},
+                ],
+                "threshold": {
+                    "line": {"color": bar_color, "width": 4},
+                    "thickness": 0.85,
+                    "value": value_pct,
+                },
+            },
+        )
+    )
+    fig.update_layout(
+        height=300,
+        margin=dict(l=20, r=20, t=20, b=20),
+        paper_bgcolor=theme["card_bg"],
+        plot_bgcolor=theme["card_bg"],
+        font=dict(family="Inter, sans-serif"),
+    )
+    return fig
+
+
 if selected_claim:
     idx = df[df["claim_id"] == selected_claim].index[0]
     proba = model.predict_proba(X.iloc[[idx]])[:, 1][0]
+    pct = proba * 100
 
     if proba > 0.6:
-        risk_label = "ÉLEVÉ"
+        risk_label, risk_color_key = "ÉLEVÉ", "accent_red"
         risk_icon = "🔴"
     elif proba > 0.3:
-        risk_label = "MOYEN"
+        risk_label, risk_color_key = "MOYEN", "accent_orange"
         risk_icon = "🟡"
     else:
-        risk_label = "FAIBLE"
+        risk_label, risk_color_key = "FAIBLE", "accent_green"
         risk_icon = "🟢"
 
     real = int(df.loc[idx, "insatisfaction"])
     real_label = "Insatisfait" if real == 1 else "Satisfait"
 
-    c1, c2, c3 = st.columns(3)
-    c1.metric("Score de risque", f"{proba:.1%}")
-    c2.metric("Niveau", f"{risk_icon} {risk_label}")
-    c3.metric("Vérité terrain", real_label)
+
+    # ============================================================
+    # Section 2 — Score (jauge centrale + KPIs secondaires)
+    # ============================================================
+    section_header(
+        "Score du dossier",
+        "Probabilité prédite d'insatisfaction et indicateurs associés.",
+    )
+
+    gauge_col, side_col = st.columns([2, 1])
+
+    with gauge_col:
+        st.plotly_chart(_build_gauge(pct, theme), use_container_width=True)
+
+    with side_col:
+        st.metric("Niveau de risque", f"{risk_icon} {risk_label}")
+        st.metric("Vérité terrain", real_label)
+        st.metric(
+            "Indemnisation",
+            format_value(
+                "compensation_balance_amount",
+                df.loc[idx, "compensation_balance_amount"],
+            ),
+        )
 
 
-    # === Section explication SHAP ===
+    # ============================================================
+    # Section 3 — Facteurs explicatifs SHAP
+    # ============================================================
     section_header(
         "Facteurs explicatifs",
         "Variables qui poussent vers ou loin de l'insatisfaction (impact SHAP local).",
@@ -128,7 +208,7 @@ if selected_claim:
 
     col_pos, col_neg = st.columns(2)
     with col_pos:
-        st.markdown(f"##### Facteurs qui augmentent le risque")
+        st.markdown("##### Facteurs qui augmentent le risque")
         for item in explanation["top_positive"]:
             feat = label_for(item["feature"])
             val = format_value(item["feature"], item["feature_value"])
@@ -140,7 +220,7 @@ if selected_claim:
             )
 
     with col_neg:
-        st.markdown(f"##### Facteurs qui réduisent le risque")
+        st.markdown("##### Facteurs qui réduisent le risque")
         for item in explanation["top_negative"]:
             feat = label_for(item["feature"])
             val = format_value(item["feature"], item["feature_value"])
@@ -152,32 +232,9 @@ if selected_claim:
             )
 
 
-    # === Waterfall SHAP ===
-    section_header(
-        "Décomposition du score",
-        "Comment le modèle passe de la moyenne globale au score de ce dossier.",
-    )
-
-    X_display = X.copy()
-    X_display.columns = labels_for(X.columns)
-
-    shap_explanation = shap.Explanation(
-        values=shap_values[idx],
-        base_values=explainer.expected_value,
-        data=X_display.iloc[idx].values,
-        feature_names=list(X_display.columns),
-    )
-
-    plt.style.use("default" if st.session_state.theme_mode == "light" else "dark_background")
-    fig, _ = plt.subplots(figsize=(10, 6))
-    shap.waterfall_plot(shap_explanation, max_display=12, show=False)
-    fig.patch.set_facecolor("none")
-    plt.tight_layout()
-    st.pyplot(fig)
-    plt.close()
-
-
-    # === Détails dossier ===
+    # ============================================================
+    # Section 4 — Détails dossier
+    # ============================================================
     with st.expander("Détails complets du dossier"):
         key_cols = [
             "claim_id",
