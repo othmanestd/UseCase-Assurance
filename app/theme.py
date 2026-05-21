@@ -397,19 +397,34 @@ def apply_theme() -> dict:
 
 
 def theme_toggle() -> dict:
-    """Switch clair/sombre avec label adaptatif (decrit l'ACTION a effectuer)."""
+    """Switch clair/sombre avec label adaptatif rendu en markdown custom.
+
+    On collapse le label natif du toggle (parfois muted par BaseWeb) et on
+    affiche notre propre texte a cote, avec une couleur garantie via le
+    theme courant.
+    """
     if "theme_mode" not in st.session_state:
         st.session_state.theme_mode = "light"
     current = st.session_state.theme_mode
+    theme = THEMES[current]
 
-    # Label = ce vers quoi on bascule si on clique
-    label = "☀️ Mode clair" if current == "dark" else "🌙 Mode sombre"
+    label_text = "☀️ Mode clair" if current == "dark" else "🌙 Mode sombre"
 
-    is_dark = st.toggle(
-        label,
-        value=(current == "dark"),
-        label_visibility="visible",
-    )
+    # Layout : label (gauche, large) + switch (droite, compact)
+    label_col, switch_col = st.columns([3, 1])
+    with label_col:
+        st.markdown(
+            f'<div style="text-align:right; padding-top:0.5rem; '
+            f'color:{theme["text"]}; font-size:0.9rem; font-weight:500; '
+            f'white-space:nowrap;">{label_text}</div>',
+            unsafe_allow_html=True,
+        )
+    with switch_col:
+        is_dark = st.toggle(
+            "theme_switch_collapsed_label",
+            value=(current == "dark"),
+            label_visibility="collapsed",
+        )
 
     new_mode = "dark" if is_dark else "light"
     if new_mode != current:

@@ -1,13 +1,8 @@
-<svg xmlns="http://www.w3.org/2000/svg" width="170" height="44" viewBox="0 0 170 44">
-  <defs>
-    <linearGradient id="grad" x1="0%" y1="0%" x2="100%" y2="100%">
-      <stop offset="0%" stop-color="#5B6FED"/>
-      <stop offset="100%" stop-color="#8B5CF6"/>
-    </linearGradient>
-  </defs>
-  <circle cx="22" cy="22" r="18" fill="url(#grad)"/>
-  <text x="22" y="27" text-anchor="middle" fill="#FFFFFF"
-        font-family="Inter, system-ui, sans-serif" font-weight="700" font-size="14">Si</text>
-  <text x="50" y="28" fill="#1E2A3B"
-        font-family="Inter, system-ui, sans-serif" font-weight="700" font-size="17" letter-spacing="0.04em">SILAMIR</text>
+<svg xmlns="http://www.w3.org/2000/svg" width="180" height="62" viewBox="0 0 180 62">
+  <text x="0" y="38"
+        font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Inter, system-ui, sans-serif"
+        font-weight="900" font-size="36" fill="#000000" letter-spacing="-0.025em">SILAMIR</text>
+  <text x="86" y="58"
+        font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Inter, system-ui, sans-serif"
+        font-weight="700" font-size="13" fill="#1d4ed8" letter-spacing="0.22em">GROUP</text>
 </svg>
