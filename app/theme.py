@@ -226,16 +226,31 @@ def _css_for(theme: dict) -> str:
         text-decoration: none;
     }}
 
-    /* === Radio (theme toggle) === */
+    /* === Radio (used for "Niveau de risque" filter) === */
     [role="radiogroup"] {{
-        gap: 0.4rem;
+        gap: 0.3rem;
     }}
     [role="radiogroup"] label {{
-        background-color: {theme["bg"]};
-        border: 1px solid {theme["border"]};
-        padding: 0.3rem 0.6rem !important;
-        border-radius: 6px;
-        cursor: pointer;
+        background-color: transparent;
+        border: none;
+        padding: 0.15rem 0 !important;
+        color: {theme["text"]} !important;
+    }}
+    [role="radiogroup"] label > div {{
+        color: {theme["text"]} !important;
+        font-size: 0.88rem;
+    }}
+
+    /* === Toggle switch (theme toggle) === */
+    [data-testid="stToggle"] label,
+    [data-testid="stToggle"] label > div {{
+        color: {theme["text"]} !important;
+        font-size: 0.88rem !important;
+        font-weight: 500;
+    }}
+    [data-testid="stToggle"] {{
+        display: flex;
+        justify-content: flex-end;
     }}
 
     /* === Expander === */
@@ -369,20 +384,18 @@ def apply_theme() -> dict:
 
 
 def theme_toggle() -> dict:
-    """Sélecteur clair/sombre dans le container courant."""
-    current = st.session_state.get("theme_mode", "light")
-    options = [f"{THEMES['light']['icon']} Clair", f"{THEMES['dark']['icon']} Sombre"]
-    idx = 0 if current == "light" else 1
+    """Switch clair/sombre — natif Streamlit, look propre dans les deux modes."""
+    if "theme_mode" not in st.session_state:
+        st.session_state.theme_mode = "light"
+    current = st.session_state.theme_mode
 
-    choice = st.radio(
-        "Thème",
-        options,
-        index=idx,
-        horizontal=True,
-        key="theme_radio",
-        label_visibility="collapsed",
+    is_dark = st.toggle(
+        "🌙 Mode sombre",
+        value=(current == "dark"),
+        label_visibility="visible",
     )
-    new_mode = "light" if "Clair" in choice else "dark"
+
+    new_mode = "dark" if is_dark else "light"
     if new_mode != current:
         st.session_state.theme_mode = new_mode
         st.rerun()
@@ -412,14 +425,15 @@ def page_header(title: str, subtitle: str | None = None) -> dict:
     Remplace le couple st.title() + st.caption() en début de page.
     Renvoie le dict du thème courant (potentiellement modifié par le toggle).
     """
-    col_left, col_right = st.columns([6, 2])
+    col_left, col_right = st.columns([5, 2])
     with col_left:
         st.title(title)
         if subtitle:
             st.caption(subtitle)
     with col_right:
+        # Spacer pour aligner verticalement le toggle avec le titre
         st.markdown(
-            '<div style="display:flex; justify-content:flex-end; padding-top:0.9rem;"></div>',
+            '<div style="height: 1.2rem;"></div>',
             unsafe_allow_html=True,
         )
         theme = theme_toggle()
