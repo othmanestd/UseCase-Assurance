@@ -1,10 +1,10 @@
 [theme]
-# Base par defaut : clair. L'utilisateur peut basculer sombre via la sidebar.
+# Base par defaut : clair. Toggle sombre disponible dans la sidebar.
 base = "light"
-primaryColor = "#2563eb"
-backgroundColor = "#ffffff"
-secondaryBackgroundColor = "#f5f6f8"
-textColor = "#1f2733"
+primaryColor = "#5B6FED"
+backgroundColor = "#F8F9FB"
+secondaryBackgroundColor = "#FFFFFF"
+textColor = "#1E2A3B"
 font = "sans serif"
 
 [server]

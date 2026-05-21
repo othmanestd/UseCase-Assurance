@@ -8,36 +8,32 @@ import streamlit as st
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
 st.set_page_config(
-    page_title="Insatisfaction Bris de Glace — Silamir",
-    page_icon="🔍",
+    page_title="Insatisfaction · Silamir",
+    page_icon="🔮",
     layout="wide",
     initial_sidebar_state="expanded",
 )
 
-from app.theme import apply_theme, theme_toggle, section_header
+from app.theme import apply_theme, brand_block, section_header, sidebar_label, theme_toggle
 
-# === Init thème ===
+
 theme = apply_theme()
+brand_block()
 
-st.sidebar.markdown("### Navigation")
-st.sidebar.caption(
-    "Utilisez les pages ci-dessus pour explorer :\n\n"
-    "• **Vue globale** — Synthèse modèle & drivers\n\n"
-    "• **Prédiction dossier** — Score + SHAP\n\n"
-    "• **Alertes** — Dossiers prioritaires"
-)
-
-st.sidebar.divider()
-with st.sidebar.expander("⚙️ Apparence", expanded=False):
-    theme = theme_toggle()
-
-
-# === Header ===
 st.title("Prédiction de l'insatisfaction client")
-st.markdown(
-    f"<p style='color:{theme['text_muted']}; font-size:1.05rem; margin-top:-0.5rem;'>"
-    "Sinistres Bris de Glace — Assurance Automobile · Silamir"
-    "</p>",
+st.caption("Sinistres Bris de Glace — Assurance Automobile · Silamir")
+
+
+# === Sidebar ===
+sidebar_label("Navigation")
+st.sidebar.markdown(
+    """
+    <div style="line-height:1.9; font-size:0.9rem;">
+    📊 <b>Vue globale</b> — synthèse modèle<br/>
+    🔬 <b>Prédiction dossier</b> — score + SHAP<br/>
+    🚨 <b>Alertes</b> — dossiers prioritaires
+    </div>
+    """,
     unsafe_allow_html=True,
 )
 
@@ -46,76 +42,75 @@ st.markdown(
 section_header("Contexte", "PFE Process Mining + Machine Learning")
 
 st.markdown(
-    """
-Ce dashboard accompagne la **phase 2** du projet de prédiction d'insatisfaction
-client sur les sinistres Bris de Glace. Il fait suite à l'analyse processuelle
-réalisée dans **Celonis** (phase 1) en transformant les insights en un outil
-opérationnel d'aide à la décision.
-"""
+    f"""
+    <p style="color:{theme['text_subtle']}; font-size:0.95rem; line-height:1.6;">
+    Ce dashboard accompagne la <b>phase 2</b> du projet de prédiction d'insatisfaction
+    client sur les sinistres Bris de Glace. Il fait suite à l'analyse processuelle
+    réalisée dans <b>Celonis</b> (phase 1) en transformant les insights en un outil
+    opérationnel d'aide à la décision.
+    </p>
+    """,
+    unsafe_allow_html=True,
 )
 
 
-# === Pages ===
+# === Cards de navigation ===
 section_header("Pages du dashboard")
 
 c1, c2, c3 = st.columns(3)
 
-with c1:
-    st.markdown(
+
+def _nav_card(col, icon, title, desc):
+    col.markdown(
         f"""
-        <div style="border:1px solid {theme['card_border']}; border-radius:10px;
-                    padding:1rem 1.2rem; background:{theme['card_bg']};
-                    height:100%;">
-            <h3 style="margin-top:0; color:{theme['primary']};">📊 Vue globale</h3>
-            <p style="color:{theme['text_muted']}; font-size:0.9rem;">
-                KPI agrégés, distribution du risque, évolution temporelle
-                et drivers du modèle.
-            </p>
+        <div style="background:{theme['card_bg']};
+                    border-radius:12px;
+                    padding:1.2rem 1.3rem;
+                    box-shadow:{theme['card_shadow']};
+                    height:160px;">
+            <div style="width:36px; height:36px; border-radius:8px;
+                        background:{theme['primary_light']};
+                        color:{theme['primary']};
+                        display:flex; align-items:center; justify-content:center;
+                        font-size:1.2rem; margin-bottom:0.7rem;">
+                {icon}
+            </div>
+            <div style="font-weight:600; color:{theme['text']}; font-size:1rem; margin-bottom:0.3rem;">
+                {title}
+            </div>
+            <div style="color:{theme['text_muted']}; font-size:0.85rem; line-height:1.4;">
+                {desc}
+            </div>
         </div>
         """,
         unsafe_allow_html=True,
     )
 
-with c2:
-    st.markdown(
-        f"""
-        <div style="border:1px solid {theme['card_border']}; border-radius:10px;
-                    padding:1rem 1.2rem; background:{theme['card_bg']};
-                    height:100%;">
-            <h3 style="margin-top:0; color:{theme['primary']};">🔬 Prédiction dossier</h3>
-            <p style="color:{theme['text_muted']}; font-size:0.9rem;">
-                Score de risque individuel et explication SHAP
-                pour comprendre la décision du modèle.
-            </p>
-        </div>
-        """,
-        unsafe_allow_html=True,
-    )
 
-with c3:
-    st.markdown(
-        f"""
-        <div style="border:1px solid {theme['card_border']}; border-radius:10px;
-                    padding:1rem 1.2rem; background:{theme['card_bg']};
-                    height:100%;">
-            <h3 style="margin-top:0; color:{theme['primary']};">🚨 Alertes</h3>
-            <p style="color:{theme['text_muted']}; font-size:0.9rem;">
-                Liste priorisée des dossiers à fort risque
-                pour action proactive du gestionnaire.
-            </p>
-        </div>
-        """,
-        unsafe_allow_html=True,
-    )
+_nav_card(c1, "📊", "Vue globale",
+          "Synthèse modèle, performance, distribution du risque, drivers.")
+_nav_card(c2, "🔬", "Prédiction dossier",
+          "Score individuel et explication SHAP pour un dossier ciblé.")
+_nav_card(c3, "🚨", "Alertes",
+          "Liste priorisée des dossiers à fort risque pour action proactive.")
 
 
 # === Stack technique ===
 section_header("Stack technique")
 st.markdown(
-    """
-- **Process Mining** — Celonis EMS (phase 1)
-- **Machine Learning** — XGBoost + SMOTE, validation croisée 5-fold
-- **Explainabilité** — SHAP (TreeExplainer)
-- **Dashboard** — Streamlit + Plotly
-"""
+    f"""
+    <ul style="color:{theme['text_subtle']}; font-size:0.9rem; line-height:1.8;">
+        <li><b>Process Mining</b> — Celonis EMS (phase 1)</li>
+        <li><b>Machine Learning</b> — XGBoost + SMOTE, validation croisée 5-fold</li>
+        <li><b>Explainabilité</b> — SHAP (TreeExplainer)</li>
+        <li><b>Dashboard</b> — Streamlit + Plotly</li>
+    </ul>
+    """,
+    unsafe_allow_html=True,
 )
+
+
+# === Sidebar footer ===
+st.sidebar.divider()
+with st.sidebar.expander("Apparence", expanded=False):
+    theme = theme_toggle()

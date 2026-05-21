@@ -9,40 +9,43 @@ import streamlit as st
 
 sys.path.insert(0, str(Path(__file__).parent.parent.parent))
 
-from app.theme import apply_theme, theme_toggle, section_header
+from app.theme import (
+    apply_theme,
+    brand_block,
+    section_header,
+    sidebar_label,
+    theme_toggle,
+)
 from src.celonis_connector import load_data_smart, show_data_status
 from src.feature_labels import label_for, rename_columns
 from src.model import load_model, prepare_train_data
 
 
-# === Init thème ===
 theme = apply_theme()
+brand_block()
 
 st.title("Alertes")
 st.caption("Dossiers à risque élevé nécessitant une action proactive")
 
 
-# === Sidebar (filtres en haut, apparence en bas) ===
-
-
 @st.cache_data(ttl=600, show_spinner="Calcul des scores…")
 def load_and_predict():
-    df, source = load_data_smart()
+    df, _ = load_data_smart()
     model = load_model()
     X, _, _ = prepare_train_data(df, exclude_post_hoc=True)
     df["risk_score"] = model.predict_proba(X)[:, 1]
     df["risk_prediction"] = model.predict(X)
-    return df, source
+    return df
 
 
-df_raw, _ = load_and_predict()
+df_raw = load_and_predict()
 
 
 # === Sidebar : Filtres alertes ===
-st.sidebar.markdown("### 🔍 Filtres alertes")
+sidebar_label("Filtres alertes")
 
 seuil = st.sidebar.slider(
-    "Seuil d'alerte (score de risque)",
+    "Seuil d'alerte (score)",
     min_value=0.0,
     max_value=1.0,
     value=0.6,
@@ -58,14 +61,9 @@ show_only_real = st.sidebar.checkbox(
     "Uniquement les vrais insatisfaits", value=False
 )
 
-if st.sidebar.button("🔄 Rafraîchir", key="refresh_alertes", use_container_width=True):
+if st.sidebar.button("Rafraîchir", key="refresh_alertes", use_container_width=True):
     st.cache_data.clear()
     st.rerun()
-
-st.sidebar.divider()
-show_data_status()
-with st.sidebar.expander("⚙️ Apparence", expanded=False):
-    theme = theme_toggle()
 
 
 # === Application des filtres ===
@@ -75,11 +73,9 @@ if show_only_real:
     alertes = alertes[alertes["insatisfaction"] == 1]
 
 
-# ============================================================
-# Section 1 — Indicateurs alertes
-# ============================================================
+# === Indicateurs ===
 section_header(
-    "🚨 Indicateurs d'alerte",
+    "Indicateurs d'alerte",
     f"Seuil actif : score ≥ {seuil:.2f}",
 )
 
@@ -91,24 +87,22 @@ if len(alertes) > 0:
     c2.metric("Vrais positifs", f"{vp:,} / {len(alertes):,}".replace(",", " "))
     c3.metric("Précision alerte", f"{alertes['insatisfaction'].mean():.1%}")
     couverture = alertes["insatisfaction"].sum() / max(df["insatisfaction"].sum(), 1)
-    c4.metric("Couverture insatisfaits", f"{couverture:.1%}")
+    c4.metric("Couverture", f"{couverture:.1%}")
 else:
     c2.metric("Vrais positifs", "—")
     c3.metric("Précision alerte", "—")
-    c4.metric("Couverture insatisfaits", "—")
+    c4.metric("Couverture", "—")
 
 
 if len(alertes) == 0:
-    st.success("✅ Aucun dossier ne dépasse le seuil d'alerte défini.")
+    st.success("Aucun dossier ne dépasse le seuil d'alerte.")
     st.stop()
 
 
-# ============================================================
-# Section 2 — Distribution & profil
-# ============================================================
+# === Distribution & profil ===
 section_header(
-    "📊 Distribution & profil",
-    "Comment se répartissent les alertes et en quoi elles diffèrent des autres dossiers.",
+    "Distribution & profil",
+    "Répartition des alertes et profil moyen vs autres dossiers.",
 )
 
 col_l, col_r = st.columns(2)
@@ -118,10 +112,18 @@ with col_l:
         alertes,
         x="risk_score",
         nbins=20,
-        title=f"Distribution des scores (seuil ≥ {seuil:.2f})",
         template=theme["plotly_template"],
         color_discrete_sequence=[theme["accent_red"]],
         labels={"risk_score": "Score de risque"},
+    )
+    fig.update_layout(
+        height=340,
+        margin=dict(l=10, r=10, t=20, b=10),
+        plot_bgcolor=theme["card_bg"],
+        paper_bgcolor=theme["card_bg"],
+        font=dict(family="Inter, sans-serif", size=12, color=theme["text"]),
+        xaxis=dict(showgrid=False),
+        yaxis=dict(gridcolor=theme["border"]),
     )
     st.plotly_chart(fig, use_container_width=True)
 
@@ -139,8 +141,8 @@ with col_r:
 
     comparison = pd.DataFrame({
         "Variable": [label_for(c) for c in profile_cols],
-        "Dossiers en alerte": alerte_means.values,
-        "Autres dossiers": non_alerte_means.values,
+        "Alerte": alerte_means.values,
+        "Autres": non_alerte_means.values,
     })
     comparison_long = comparison.melt(
         id_vars="Variable", var_name="Groupe", value_name="Valeur moyenne"
@@ -152,22 +154,28 @@ with col_r:
         y="Valeur moyenne",
         color="Groupe",
         barmode="group",
-        title="Profil moyen — alertes vs autres dossiers",
         template=theme["plotly_template"],
         color_discrete_map={
-            "Dossiers en alerte": theme["accent_red"],
-            "Autres dossiers": theme["primary"],
+            "Alerte": theme["accent_red"],
+            "Autres": theme["primary"],
         },
     )
-    fig.update_xaxes(tickangle=-25)
+    fig.update_layout(
+        height=340,
+        margin=dict(l=10, r=10, t=20, b=10),
+        plot_bgcolor=theme["card_bg"],
+        paper_bgcolor=theme["card_bg"],
+        font=dict(family="Inter, sans-serif", size=11, color=theme["text"]),
+        xaxis=dict(tickangle=-25, title=None, showgrid=False),
+        yaxis=dict(title=None, gridcolor=theme["border"]),
+        legend=dict(orientation="h", yanchor="top", y=-0.15, xanchor="center", x=0.5),
+    )
     st.plotly_chart(fig, use_container_width=True)
 
 
-# ============================================================
-# Section 3 — Liste des alertes
-# ============================================================
+# === Liste alertes ===
 section_header(
-    "📋 Liste des dossiers en alerte",
+    "Liste des dossiers en alerte",
     f"{len(alertes)} dossiers triés par score décroissant.",
 )
 
@@ -189,7 +197,7 @@ table = rename_columns(table, only=available_cols)
 
 st.dataframe(
     table.style
-        .background_gradient(subset=["Score de risque"], cmap="RdYlGn_r")
+        .background_gradient(subset=["Score de risque"], cmap="Purples")
         .format({
             "Score de risque": "{:.3f}",
             "Indemnisation (€)": "{:,.0f}",
@@ -197,17 +205,22 @@ st.dataframe(
             "Durée création → clôture (jours)": "{:.0f}",
         }),
     use_container_width=True,
-    height=520,
+    height=480,
     hide_index=True,
 )
 
-
-# === Export CSV ===
 csv = table.to_csv(index=False).encode("utf-8")
 st.download_button(
-    label="⬇️ Télécharger la liste des alertes (CSV)",
+    label="Télécharger CSV",
     data=csv,
     file_name="alertes_insatisfaction.csv",
     mime="text/csv",
-    use_container_width=False,
 )
+
+
+# === Sidebar footer ===
+st.sidebar.divider()
+sidebar_label("Données")
+show_data_status()
+with st.sidebar.expander("Apparence", expanded=False):
+    theme = theme_toggle()

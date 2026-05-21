@@ -1,8 +1,7 @@
 """Synthèse modèle — focus sur la prédiction ML.
 
-Les analyses descriptives (délais, volumes, indemnisation, motifs)
-sont déjà couvertes par le dashboard Celonis. Cette page se concentre
-sur ce que Celonis ne fait pas : le scoring prédictif et ses drivers.
+Style inspiré du template Figma GOODFOOD : cards minimalistes, accent indigo,
+sidebar branding, typo Inter.
 """
 
 import sys
@@ -15,14 +14,21 @@ from sklearn.metrics import f1_score, precision_score, recall_score, roc_auc_sco
 
 sys.path.insert(0, str(Path(__file__).parent.parent.parent))
 
-from app.theme import apply_theme, theme_toggle, section_header
+from app.theme import (
+    apply_theme,
+    brand_block,
+    section_header,
+    sidebar_label,
+    theme_toggle,
+)
 from src.celonis_connector import load_data_smart, show_data_status
 from src.feature_labels import labels_for
 from src.model import load_model, prepare_train_data
 
 
-# === Init thème ===
+# === Init thème + branding ===
 theme = apply_theme()
+brand_block()
 
 st.title("Synthèse modèle")
 st.caption("Vue d'ensemble du scoring prédictif — complémentaire au dashboard Celonis")
@@ -44,7 +50,7 @@ model = get_model()
 
 
 # === Sidebar : Filtres ===
-st.sidebar.markdown("### 🔍 Filtres")
+sidebar_label("Filtres")
 
 years = sorted(df_raw["claim_created_year"].dropna().unique().astype(int))
 selected_years = st.sidebar.multiselect(
@@ -67,7 +73,7 @@ with st.sidebar.expander("Filtres avancés", expanded=False):
         "Délai total (jours)", 0, max_delai, (0, max_delai)
     )
 
-if st.sidebar.button("🔄 Rafraîchir", use_container_width=True):
+if st.sidebar.button("Rafraîchir les données", use_container_width=True):
     st.cache_data.clear()
     st.rerun()
 
@@ -98,40 +104,31 @@ df["risk_level"] = pd.cut(
 
 
 # ============================================================
-# Section 1 — KPIs essentiels (4 indicateurs uniquement)
+# Section 1 — KPIs essentiels
 # ============================================================
 section_header(
-    "📊 Indicateurs clés du modèle",
+    "Indicateurs clés",
     f"{len(df):,} dossiers scorés".replace(",", " "),
 )
 
 c1, c2, c3, c4 = st.columns(4)
-c1.metric(
-    "Dossiers scorés",
-    f"{len(df):,}".replace(",", " "),
-)
+c1.metric("Dossiers scorés", f"{len(df):,}".replace(",", " "))
 c2.metric(
-    "Risque élevé (score > 0.6)",
+    "Risque élevé",
     f"{int((df['risk_level'] == 'Élevé').sum()):,}".replace(",", " "),
-    delta=f"{(df['risk_level'] == 'Élevé').mean():.1%} des dossiers",
+    delta=f"{(df['risk_level'] == 'Élevé').mean():.1%} du total",
     delta_color="off",
 )
-c3.metric(
-    "Score moyen",
-    f"{df['risk_score'].mean():.2f}",
-)
-c4.metric(
-    "Taux insatisfaction réel",
-    f"{df['insatisfaction'].mean():.1%}",
-)
+c3.metric("Score moyen", f"{df['risk_score'].mean():.2f}")
+c4.metric("Insatisfaction réelle", f"{df['insatisfaction'].mean():.1%}")
 
 
 # ============================================================
 # Section 2 — Performance du modèle
 # ============================================================
 section_header(
-    "🎯 Performance du modèle",
-    "Métriques de validation — XGBoost + SMOTE, validation croisée 5-fold.",
+    "Performance du modèle",
+    "XGBoost + SMOTE · validation croisée 5-fold",
 )
 
 roc = roc_auc_score(y, probas)
@@ -145,18 +142,12 @@ m2.metric("F1 (insatisfait)", f"{f1:.3f}")
 m3.metric("Précision", f"{prec:.1%}")
 m4.metric("Recall", f"{rec:.1%}")
 
-st.caption(
-    "💡 Le modèle identifie environ 60 % des dossiers réellement insatisfaits "
-    "avec une précision de ~50 % sur les dossiers signalés — utile pour priorisation, "
-    "pas pour automatisation."
-)
-
 
 # ============================================================
-# Section 3 — Distribution & niveaux de risque
+# Section 3 — Distribution & niveaux
 # ============================================================
 section_header(
-    "📈 Distribution des scores",
+    "Distribution des scores",
     "Répartition des scores prédits et niveaux de risque.",
 )
 
@@ -168,12 +159,20 @@ with col_left:
         x="risk_score",
         nbins=40,
         color="insatisfaction",
-        labels={"risk_score": "Score de risque", "insatisfaction": "Insatisfait (réel)"},
-        title="Distribution des scores",
-        color_discrete_map={0: theme["accent_green"], 1: theme["accent_red"]},
+        labels={"risk_score": "Score de risque", "insatisfaction": "Insatisfait"},
+        color_discrete_map={0: theme["primary"], 1: theme["accent_red"]},
         template=theme["plotly_template"],
     )
-    fig.update_layout(legend_title_text="Insatisfait", height=380)
+    fig.update_layout(
+        legend_title_text="Insatisfait",
+        height=360,
+        margin=dict(l=10, r=10, t=20, b=10),
+        plot_bgcolor=theme["card_bg"],
+        paper_bgcolor=theme["card_bg"],
+        font=dict(family="Inter, sans-serif", size=12, color=theme["text"]),
+        xaxis=dict(showgrid=False),
+        yaxis=dict(gridcolor=theme["border"], gridwidth=1),
+    )
     st.plotly_chart(fig, use_container_width=True)
 
 with col_right:
@@ -181,7 +180,6 @@ with col_right:
     fig = px.pie(
         values=risk_counts.values,
         names=risk_counts.index,
-        title="Répartition par niveau",
         color=risk_counts.index,
         color_discrete_map={
             "Faible": theme["accent_green"],
@@ -189,10 +187,17 @@ with col_right:
             "Élevé": theme["accent_red"],
         },
         template=theme["plotly_template"],
-        hole=0.45,
+        hole=0.55,
     )
     fig.update_traces(textposition="outside", textinfo="percent+label")
-    fig.update_layout(height=380, showlegend=False)
+    fig.update_layout(
+        height=360,
+        showlegend=False,
+        margin=dict(l=10, r=10, t=20, b=10),
+        plot_bgcolor=theme["card_bg"],
+        paper_bgcolor=theme["card_bg"],
+        font=dict(family="Inter, sans-serif", size=12, color=theme["text"]),
+    )
     st.plotly_chart(fig, use_container_width=True)
 
 
@@ -200,7 +205,7 @@ with col_right:
 # Section 4 — Drivers du risque
 # ============================================================
 section_header(
-    "🔍 Drivers du risque",
+    "Drivers du risque",
     "Variables qui pèsent le plus dans la prédiction (XGBoost feature importance).",
 )
 
@@ -214,22 +219,25 @@ fig = px.bar(
     x="Importance",
     y="Feature",
     orientation="h",
-    title="Top 12 — Importance des variables",
     template=theme["plotly_template"],
-    color="Importance",
-    color_continuous_scale=[theme["primary"], theme["accent_red"]],
+    color_discrete_sequence=[theme["primary"]],
 )
 fig.update_layout(
-    yaxis=dict(autorange="reversed"),
+    yaxis=dict(autorange="reversed", title=None),
+    xaxis=dict(title=None, showgrid=True, gridcolor=theme["border"]),
     showlegend=False,
-    coloraxis_showscale=False,
     height=440,
+    margin=dict(l=10, r=10, t=10, b=10),
+    plot_bgcolor=theme["card_bg"],
+    paper_bgcolor=theme["card_bg"],
+    font=dict(family="Inter, sans-serif", size=12, color=theme["text"]),
 )
 st.plotly_chart(fig, use_container_width=True)
 
 
-# === Footer compact : statut données + apparence ===
+# === Sidebar footer ===
 st.sidebar.divider()
+sidebar_label("Données")
 show_data_status()
-with st.sidebar.expander("⚙️ Apparence", expanded=False):
+with st.sidebar.expander("Apparence", expanded=False):
     theme = theme_toggle()
